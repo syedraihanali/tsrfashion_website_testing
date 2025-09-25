@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, Fragment, useEffect, useState } from "react";
+import { FormEvent, Fragment, useEffect, useId, useState } from "react";
 import { cn } from "@/lib/utils";
 import { integralCF } from "@/styles/fonts";
 import Link from "next/link";
@@ -77,6 +77,7 @@ const TopNavbar = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
+  const searchInputId = useId();
 
   useEffect(() => {
     if (pathname === "/search") {
@@ -133,6 +134,9 @@ const TopNavbar = () => {
           onSubmit={handleSearchSubmit}
           className="hidden md:flex w-full max-w-[320px] lg:max-w-md mr-3 lg:mr-10"
         >
+          <label className="sr-only" htmlFor={searchInputId}>
+            Search products
+          </label>
           <InputGroup className="bg-[#F0F0F0]">
             <InputGroup.Text className="pl-0">
               <button
@@ -157,6 +161,8 @@ const TopNavbar = () => {
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search for products..."
               className="bg-transparent placeholder:text-black/40"
+              id={searchInputId}
+              autoComplete="off"
             />
           </InputGroup>
         </form>

@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState, useId } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import InputGroup from "@/components/ui/input-group";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ export default function SearchPage() {
   const searchParams = useSearchParams();
   const queryFromParams = searchParams.get("q") ?? "";
   const [searchTerm, setSearchTerm] = useState(queryFromParams);
+  const searchInputId = useId();
 
   useEffect(() => {
     setSearchTerm(queryFromParams);
@@ -87,6 +88,9 @@ export default function SearchPage() {
             onSubmit={handleSubmit}
             className="mt-6 flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-3"
           >
+            <label className="sr-only" htmlFor={searchInputId}>
+              Search for products
+            </label>
             <InputGroup className="bg-[#F0F0F0] max-w-2xl">
               <InputGroup.Input
                 type="search"
@@ -95,6 +99,8 @@ export default function SearchPage() {
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder={'Try "t-shirt", "casual" or "black"'}
                 className="bg-transparent placeholder:text-black/40"
+                id={searchInputId}
+                autoComplete="off"
               />
             </InputGroup>
             <Button
