@@ -5,12 +5,17 @@ import * as SliderPrimitive from "@radix-ui/react-slider";
 import { cn } from "@/lib/utils";
 
 interface SliderProps
-  extends React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root> {
+  extends Omit<
+    React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root>,
+    "value" | "onValueChange" | "defaultValue"
+  > {
   min: number;
   max: number;
   step?: number;
   defaultValue?: [number, number];
+  value?: [number, number];
   label?: string;
+  onValueChange?: (value: [number, number]) => void;
 }
 
 const Slider = React.forwardRef<
@@ -18,21 +23,30 @@ const Slider = React.forwardRef<
   SliderProps
 >(
   (
-    {
-      className,
-      min,
-      max,
-      step = 1,
-      defaultValue = [min, max],
-      label,
-      ...props
-    },
+    { className, min, max, step = 1, defaultValue = [min, max], value, label, onValueChange, ...props },
     ref
   ) => {
-    const [values, setValues] = React.useState<[number, number]>(defaultValue);
+    const [values, setValues] = React.useState<[number, number]>(
+      value ?? defaultValue
+    );
+
+    React.useEffect(() => {
+      if (value) {
+        setValues(value);
+      }
+    }, [value]);
 
     const handleValueChange = (newValues: number[]) => {
-      setValues([newValues[0], newValues[1]]);
+      const nextValues: [number, number] = [
+        newValues[0],
+        newValues[1] ?? newValues[0],
+      ];
+
+      if (!value) {
+        setValues(nextValues);
+      }
+
+      onValueChange?.(nextValues);
     };
 
     return (
@@ -46,7 +60,7 @@ const Slider = React.forwardRef<
           min={min}
           max={max}
           step={step}
-          value={values}
+          value={value ?? values}
           onValueChange={handleValueChange}
           {...props}
         >

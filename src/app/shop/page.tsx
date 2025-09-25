@@ -1,3 +1,6 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import BreadcrumbShop from "@/components/shop-page/BreadcrumbShop";
 
 import {
@@ -21,8 +24,104 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { Product } from "@/types/product.types";
+import {
+  ShopFiltersState,
+  defaultShopFiltersState,
+} from "@/types/filter.types";
+
+type SortOption = "most-popular" | "low-price" | "high-price";
+
+const getProductFinalPrice = (product: Product) => {
+  if (product.discount.percentage > 0) {
+    return Math.round(
+      product.price - (product.price * product.discount.percentage) / 100
+    );
+  }
+
+  if (product.discount.amount > 0) {
+    return product.price - product.discount.amount;
+  }
+
+  return product.price;
+};
 
 export default function ShopPage() {
+  const [filters, setFilters] = useState<ShopFiltersState>(
+    defaultShopFiltersState
+  );
+  const [sort, setSort] = useState<SortOption>("most-popular");
+
+  const products = useMemo(
+    () => [
+      ...relatedProductData,
+      ...newArrivalsData,
+      ...topSellingData,
+    ],
+    []
+  );
+
+  const filteredProducts = useMemo(() => {
+    const filtered = products.filter((product) => {
+      const finalPrice = getProductFinalPrice(product);
+
+      if (filters.category && product.category !== filters.category) {
+        return false;
+      }
+
+      if (
+        filters.styles.length > 0 &&
+        !filters.styles.includes(product.style)
+      ) {
+        return false;
+      }
+
+      if (
+        filters.colors.length > 0 &&
+        !product.colors.some((color) => filters.colors.includes(color))
+      ) {
+        return false;
+      }
+
+      if (
+        filters.sizes.length > 0 &&
+        !product.sizes.some((size) => filters.sizes.includes(size))
+      ) {
+        return false;
+      }
+
+      if (
+        finalPrice < filters.priceRange[0] ||
+        finalPrice > filters.priceRange[1]
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+
+    const sorted = [...filtered].sort((a, b) => {
+      if (sort === "low-price") {
+        return getProductFinalPrice(a) - getProductFinalPrice(b);
+      }
+
+      if (sort === "high-price") {
+        return getProductFinalPrice(b) - getProductFinalPrice(a);
+      }
+
+      return b.rating - a.rating;
+    });
+
+    return sorted;
+  }, [filters, products, sort]);
+
+  const handleFiltersChange = (nextFilters: ShopFiltersState) => {
+    setFilters(nextFilters);
+  };
+
+  const totalProducts = products.length;
+  const shownProducts = filteredProducts.length;
+
   return (
     <main className="pb-20">
       <div className="max-w-frame mx-auto px-4 xl:px-0">
@@ -34,21 +133,30 @@ export default function ShopPage() {
               <span className="font-bold text-black text-xl">Filters</span>
               <FiSliders className="text-2xl text-black/40" />
             </div>
-            <Filters />
+            <Filters
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+            />
           </div>
           <div className="flex flex-col w-full space-y-5">
             <div className="flex flex-col lg:flex-row lg:justify-between">
               <div className="flex items-center justify-between">
                 <h1 className="font-bold text-2xl md:text-[32px]">Casual</h1>
-                <MobileFilters />
+                <MobileFilters
+                  filters={filters}
+                  onFiltersChange={handleFiltersChange}
+                />
               </div>
               <div className="flex flex-col sm:items-center sm:flex-row">
                 <span className="text-sm md:text-base text-black/60 mr-3">
-                  Showing 1-10 of 100 Products
+                  Showing {shownProducts} of {totalProducts} Products
                 </span>
                 <div className="flex items-center">
                   Sort by:{" "}
-                  <Select defaultValue="most-popular">
+                  <Select
+                    value={sort}
+                    onValueChange={(value) => setSort(value as SortOption)}
+                  >
                     <SelectTrigger className="font-medium text-sm px-1.5 sm:text-base w-fit text-black bg-transparent shadow-none border-none">
                       <SelectValue />
                     </SelectTrigger>
@@ -62,13 +170,15 @@ export default function ShopPage() {
               </div>
             </div>
             <div className="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
-              {[
-                ...relatedProductData.slice(1, 4),
-                ...newArrivalsData.slice(1, 4),
-                ...topSellingData.slice(1, 4),
-              ].map((product) => (
-                <ProductCard key={product.id} data={product} />
-              ))}
+              {filteredProducts.length === 0 ? (
+                <div className="col-span-full text-center py-10 text-black/60">
+                  No products match the selected filters.
+                </div>
+              ) : (
+                filteredProducts.map((product) => (
+                  <ProductCard key={product.id} data={product} />
+                ))
+              )}
             </div>
             <hr className="border-t-black/10" />
             <Pagination className="justify-between">
