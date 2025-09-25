@@ -37,7 +37,7 @@ const ResTopNavbar = ({ data }: { data: NavMenu }) => {
           <SheetTitle asChild>
             <SheetClose asChild>
               <Link href="/" className={cn([integralCF.className, "text-2xl"])}>
-                SHOP.CO
+                TSR Fashion
               </Link>
             </SheetClose>
           </SheetTitle>
@@ -78,6 +78,50 @@ const ResTopNavbar = ({ data }: { data: NavMenu }) => {
               )}
             </React.Fragment>
           ))}
+          <div className="mt-6 grid w-full gap-3">
+            <SheetClose asChild>
+              <Link
+                href="/search"
+                className="rounded-full border border-black/15 px-4 py-2 text-sm font-medium text-black/70"
+              >
+                Search products
+              </Link>
+            </SheetClose>
+            <SheetClose asChild>
+              <Link
+                href="/profile"
+                className="rounded-full border border-black/15 px-4 py-2 text-sm font-medium text-black/70"
+              >
+                Profile & address
+              </Link>
+            </SheetClose>
+            <SheetClose asChild>
+              <Link
+                href="/order-tracking"
+                className="rounded-full border border-black/15 px-4 py-2 text-sm font-medium text-black/70"
+              >
+                Track your order
+              </Link>
+            </SheetClose>
+            <div className="flex space-x-3">
+              <SheetClose asChild>
+                <Link
+                  href="/login"
+                  className="flex-1 rounded-full border border-black/15 px-4 py-2 text-center text-sm font-medium text-black/70"
+                >
+                  Log in
+                </Link>
+              </SheetClose>
+              <SheetClose asChild>
+                <Link
+                  href="/signup"
+                  className="flex-1 rounded-full bg-black px-4 py-2 text-center text-sm font-semibold text-white"
+                >
+                  Sign up
+                </Link>
+              </SheetClose>
+            </div>
+          </div>
         </div>
       </SheetContent>
     </Sheet>

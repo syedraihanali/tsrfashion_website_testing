@@ -20,6 +20,16 @@ import { bangladeshDivisions } from "@/lib/bd-locations";
 import { FaCheckCircle } from "react-icons/fa";
 import { HiOutlineHomeModern } from "react-icons/hi2";
 import { MdOutlinePayments } from "react-icons/md";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
+import {
+  CartItem,
+  clearCart,
+} from "@/lib/features/carts/cartsSlice";
+import {
+  ORDER_STORAGE_KEY,
+  OrderTracking,
+} from "@/lib/data/orders";
+import { toast } from "react-toastify";
 
 const checkoutSchema = z.object({
   fullName: z
@@ -83,7 +93,28 @@ type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 
 type CheckoutStep = "address" | "payment";
 
+const getCartItemFinalPrice = (item: CartItem) => {
+  if (item.discount.percentage > 0) {
+    return Math.round(
+      item.price - (item.price * item.discount.percentage) / 100
+    );
+  }
+
+  if (item.discount.amount > 0) {
+    return Math.max(item.price - item.discount.amount, 0);
+  }
+
+  return item.price;
+};
+
+const ORDER_ESTIMATED_DELIVERY_DAYS = 4;
+
+const generateOrderId = () =>
+  `TSR-${Math.floor(100000 + Math.random() * 900000)}`;
+
 export default function CheckoutPage() {
+  const dispatch = useAppDispatch();
+  const { cart } = useAppSelector((state) => state.carts);
   const isAuthenticated = false;
   const router = useRouter();
   const [step, setStep] = useState<CheckoutStep>("address");
@@ -142,7 +173,114 @@ export default function CheckoutPage() {
   };
 
   const handleConfirmOrder = () => {
-    router.push("/");
+    if (!shippingDetails) {
+      toast.error("Please provide delivery details before confirming.");
+      setStep("address");
+      return;
+    }
+
+    if (!selectedPayment) {
+      toast.error("Select a payment method to continue.");
+      return;
+    }
+
+    if (!cart || cart.items.length === 0) {
+      toast.error("Your cart is empty.");
+      router.push("/cart");
+      return;
+    }
+
+    const now = new Date();
+    const placedOn = now.toISOString();
+    const estimatedDelivery = new Date(
+      now.getTime() + ORDER_ESTIMATED_DELIVERY_DAYS * 24 * 60 * 60 * 1000
+    ).toISOString();
+    const orderId = generateOrderId();
+
+    const totalAmount = cart.items.reduce((total, item) => {
+      return total + getCartItemFinalPrice(item) * item.quantity;
+    }, 0);
+
+    const addressLine2 = [
+      shippingDetails.apartment,
+      shippingDetails.roadNo,
+    ]
+      .filter((value) => value && value.trim().length > 0)
+      .join(", ");
+
+    const order: OrderTracking = {
+      id: orderId,
+      placedOn,
+      totalAmount,
+      itemsCount: cart.totalQuantities,
+      status: "processing",
+      paymentMethod:
+        paymentMethods.find((method) => method.id === selectedPayment)?.title ??
+        "Cash on Delivery",
+      estimatedDelivery,
+      notes: shippingDetails.additionalInfo,
+      shippingAddress: {
+        name: shippingDetails.fullName,
+        phone: shippingDetails.phone,
+        addressLine1: shippingDetails.addressLine1,
+        addressLine2: addressLine2.length > 0 ? addressLine2 : undefined,
+        city: shippingDetails.city,
+        division: shippingDetails.division,
+        postalCode: shippingDetails.postalCode,
+      },
+      statusHistory: [
+        {
+          id: "placed",
+          title: "Order Placed",
+          description: "We have received your order details.",
+          date: placedOn,
+          isCompleted: true,
+        },
+        {
+          id: "processing",
+          title: "Processing",
+          description: "We're preparing your items for dispatch.",
+          date: placedOn,
+          isCompleted: true,
+        },
+        {
+          id: "shipped",
+          title: "Shipped",
+          description: "Your package will be handed over to the courier soon.",
+          isCompleted: false,
+        },
+        {
+          id: "out-for-delivery",
+          title: "Out for Delivery",
+          description: "The courier will contact you before arriving.",
+          isCompleted: false,
+        },
+        {
+          id: "delivered",
+          title: "Delivered",
+          description: "Enjoy your new styles from TSR Fashion!",
+          isCompleted: false,
+        },
+      ],
+    };
+
+    if (typeof window !== "undefined") {
+      try {
+        const existing = window.localStorage.getItem(ORDER_STORAGE_KEY);
+        const parsed: OrderTracking[] = existing ? JSON.parse(existing) : [];
+        window.localStorage.setItem(
+          ORDER_STORAGE_KEY,
+          JSON.stringify([...parsed, order])
+        );
+      } catch (error) {
+        console.error("Failed to persist order", error);
+      }
+    }
+
+    dispatch(clearCart());
+    toast.success(`Order confirmed! Tracking ID: ${orderId}`);
+    setSelectedPayment("");
+    router.push(`/order-tracking?orderId=${orderId}`);
   };
 
   const renderStepIndicator = () => {
@@ -548,11 +686,18 @@ export default function CheckoutPage() {
                   <Button
                     type="button"
                     onClick={handleConfirmOrder}
-                    disabled={!selectedPayment}
+                    disabled={
+                      !selectedPayment || !cart || cart.items.length === 0
+                    }
                     className="mt-8 h-[54px] w-full rounded-full bg-black text-base font-semibold text-white disabled:cursor-not-allowed disabled:bg-black/50"
                   >
                     Confirm order
                   </Button>
+                  {!cart || cart.items.length === 0 ? (
+                    <p className="mt-3 text-center text-sm text-red-500">
+                      Add items to your cart before confirming the order.
+                    </p>
+                  ) : null}
                 </section>
               </div>
             )}

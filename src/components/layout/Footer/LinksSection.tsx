@@ -6,108 +6,82 @@ import { cn } from "@/lib/utils";
 const footerLinksData: FooterLinks[] = [
   {
     id: 1,
-    title: "company",
+    title: "shop",
     children: [
       {
         id: 11,
-        label: "about",
-        url: "#",
+        label: "all products",
+        url: "/shop",
       },
       {
         id: 12,
-        label: "features",
-        url: "#",
+        label: "new arrivals",
+        url: "/shop#new-arrivals",
       },
       {
         id: 13,
-        label: "works",
-        url: "#",
+        label: "top selling",
+        url: "/shop#top-selling",
       },
       {
         id: 14,
-        label: "career",
-        url: "#",
+        label: "on sale",
+        url: "/shop#on-sale",
       },
     ],
   },
   {
     id: 2,
-    title: "help",
+    title: "account",
     children: [
       {
         id: 21,
-        label: "customer support",
-        url: "#",
+        label: "profile",
+        url: "/profile",
       },
       {
         id: 22,
-        label: "delivery details",
-        url: "#",
+        label: "order tracking",
+        url: "/order-tracking",
       },
       {
         id: 23,
-        label: "terms & conditions",
-        url: "#",
+        label: "sign up",
+        url: "/signup",
       },
       {
         id: 24,
-        label: "privacy policy",
-        url: "#",
+        label: "log in",
+        url: "/login",
       },
     ],
   },
   {
     id: 3,
-    title: "faq",
+    title: "support",
     children: [
       {
         id: 31,
-        label: "account",
-        url: "#",
+        label: "shipping guide",
+        url: "/order-tracking",
       },
       {
         id: 32,
-        label: "manage deliveries",
-        url: "#",
+        label: "returns & exchanges",
+        url: "mailto:support@tsrfashion.com",
       },
       {
         id: 33,
-        label: "orders",
-        url: "#",
+        label: "contact support",
+        url: "mailto:support@tsrfashion.com",
       },
       {
         id: 34,
-        label: "payments",
-        url: "#",
+        label: "faqs",
+        url: "/order-tracking",
       },
     ],
   },
-  // {
-  //   id: 4,
-  //   title: "resources",
-  //   children: [
-  //     {
-  //       id: 41,
-  //       label: "Free eBooks",
-  //       url: "#",
-  //     },
-  //     {
-  //       id: 42,
-  //       label: "development tutorial",
-  //       url: "#",
-  //     },
-  //     {
-  //       id: 43,
-  //       label: "How to - Blog",
-  //       url: "#",
-  //     },
-  //     {
-  //       id: 44,
-  //       label: "youtube playlist",
-  //       url: "#",
-  //     },
-  //   ],
-  // },
 ];
 
 const LinksSection = () => {
@@ -122,10 +96,9 @@ const LinksSection = () => {
             <Link
               href={link.url}
               key={link.id}
-              className={cn([
-                link.id !== 41 && link.id !== 43 && "capitalize",
-                "text-black/60 text-sm md:text-base mb-4 w-fit",
-              ])}
+              className={cn(
+                "text-black/60 text-sm md:text-base mb-4 w-fit capitalize hover:text-black transition"
+              )}
             >
               {link.label}
             </Link>
