@@ -11,4 +11,8 @@ export type Product = {
   price: number;
   discount: Discount;
   rating: number;
+  category: string;
+  style: string;
+  colors: string[];
+  sizes: string[];
 };

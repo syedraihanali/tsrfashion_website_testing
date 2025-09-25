@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import {
   Accordion,
@@ -7,7 +9,12 @@ import {
 } from "@/components/ui/accordion";
 import { Slider } from "@/components/ui/slider";
 
-const PriceSection = () => {
+type PriceSectionProps = {
+  value: [number, number];
+  onValueChange: (value: [number, number]) => void;
+};
+
+const PriceSection = ({ value, onValueChange }: PriceSectionProps) => {
   return (
     <Accordion type="single" collapsible defaultValue="filter-price">
       <AccordionItem value="filter-price" className="border-none">
@@ -16,13 +23,17 @@ const PriceSection = () => {
         </AccordionTrigger>
         <AccordionContent className="pt-4" contentClassName="overflow-visible">
           <Slider
-            defaultValue={[50, 200]}
+            value={value}
             min={0}
             max={250}
             step={1}
             label="$"
+            onValueChange={onValueChange}
           />
-          <div className="mb-3" />
+          <div className="flex items-center justify-between text-sm text-black/60 mt-4">
+            <span>${value[0]}</span>
+            <span>${value[1]}</span>
+          </div>
         </AccordionContent>
       </AccordionItem>
     </Accordion>

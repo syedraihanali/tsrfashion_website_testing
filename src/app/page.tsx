@@ -16,6 +16,10 @@ export const newArrivalsData: Product[] = [
       percentage: 0,
     },
     rating: 4.5,
+    category: "t-shirts",
+    style: "casual",
+    colors: ["green", "white"],
+    sizes: ["Small", "Medium", "Large", "X-Large"],
   },
   {
     id: 2,
@@ -28,6 +32,10 @@ export const newArrivalsData: Product[] = [
       percentage: 20,
     },
     rating: 3.5,
+    category: "jeans",
+    style: "casual",
+    colors: ["blue", "black"],
+    sizes: ["Small", "Medium", "Large", "X-Large", "XX-Large"],
   },
   {
     id: 3,
@@ -40,6 +48,10 @@ export const newArrivalsData: Product[] = [
       percentage: 0,
     },
     rating: 4.5,
+    category: "shirts",
+    style: "formal",
+    colors: ["red", "black", "white"],
+    sizes: ["Small", "Medium", "Large", "X-Large"],
   },
   {
     id: 4,
@@ -52,6 +64,10 @@ export const newArrivalsData: Product[] = [
       percentage: 30,
     },
     rating: 4.5,
+    category: "t-shirts",
+    style: "casual",
+    colors: ["orange", "white", "black"],
+    sizes: ["Small", "Medium", "Large"],
   },
 ];
 
@@ -67,6 +83,10 @@ export const topSellingData: Product[] = [
       percentage: 20,
     },
     rating: 5.0,
+    category: "shirts",
+    style: "formal",
+    colors: ["blue", "white"],
+    sizes: ["Medium", "Large", "X-Large"],
   },
   {
     id: 6,
@@ -79,6 +99,10 @@ export const topSellingData: Product[] = [
       percentage: 0,
     },
     rating: 4.0,
+    category: "t-shirts",
+    style: "casual",
+    colors: ["black", "yellow"],
+    sizes: ["Small", "Medium", "Large", "X-Large"],
   },
   {
     id: 7,
@@ -91,6 +115,10 @@ export const topSellingData: Product[] = [
       percentage: 0,
     },
     rating: 3.0,
+    category: "shorts",
+    style: "gym",
+    colors: ["green", "black"],
+    sizes: ["Small", "Medium", "Large"],
   },
   {
     id: 8,
@@ -103,6 +131,10 @@ export const topSellingData: Product[] = [
       percentage: 0,
     },
     rating: 4.5,
+    category: "jeans",
+    style: "casual",
+    colors: ["blue", "black", "white"],
+    sizes: ["Small", "Medium", "Large", "X-Large", "XX-Large"],
   },
 ];
 
@@ -118,6 +150,10 @@ export const relatedProductData: Product[] = [
       percentage: 20,
     },
     rating: 4.0,
+    category: "shirts",
+    style: "casual",
+    colors: ["black", "white"],
+    sizes: ["Small", "Medium", "Large", "X-Large"],
   },
   {
     id: 13,
@@ -130,6 +166,10 @@ export const relatedProductData: Product[] = [
       percentage: 0,
     },
     rating: 3.5,
+    category: "t-shirts",
+    style: "party",
+    colors: ["pink", "purple", "white"],
+    sizes: ["Small", "Medium", "Large"],
   },
   {
     id: 14,
@@ -142,6 +182,10 @@ export const relatedProductData: Product[] = [
       percentage: 0,
     },
     rating: 4.5,
+    category: "shirts",
+    style: "formal",
+    colors: ["yellow", "white"],
+    sizes: ["Medium", "Large", "X-Large"],
   },
   {
     id: 15,
@@ -154,6 +198,10 @@ export const relatedProductData: Product[] = [
       percentage: 30,
     },
     rating: 5.0,
+    category: "t-shirts",
+    style: "casual",
+    colors: ["black", "white"],
+    sizes: ["Small", "Medium", "Large", "X-Large"],
   },
 ];
 
