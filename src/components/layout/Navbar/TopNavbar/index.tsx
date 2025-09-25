@@ -1,7 +1,9 @@
+"use client";
+
+import { FormEvent, Fragment, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { integralCF } from "@/styles/fonts";
 import Link from "next/link";
-import React from "react";
 import { NavMenu } from "../navbar.types";
 import { MenuList } from "./MenuList";
 import {
@@ -13,6 +15,7 @@ import Image from "next/image";
 import InputGroup from "@/components/ui/input-group";
 import ResTopNavbar from "./ResTopNavbar";
 import CartBtn from "./CartBtn";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const data: NavMenu = [
   {
@@ -70,6 +73,31 @@ const data: NavMenu = [
 ];
 
 const TopNavbar = () => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    if (pathname === "/search") {
+      setSearchTerm(searchParams.get("q") ?? "");
+    } else {
+      setSearchTerm("");
+    }
+  }, [pathname, searchParams]);
+
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmed = searchTerm.trim();
+
+    if (trimmed.length > 0) {
+      router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+      return;
+    }
+
+    router.push("/search");
+  };
+
   return (
     <nav className="sticky top-0 z-20 backdrop-blur-md bg-white/80">
       <div className="flex relative max-w-frame mx-auto items-center justify-between md:justify-start py-5 md:py-6 px-4 xl:px-0">
@@ -90,35 +118,48 @@ const TopNavbar = () => {
         <NavigationMenu className="hidden md:flex mr-2 lg:mr-7">
           <NavigationMenuList>
             {data.map((item) => (
-              <React.Fragment key={item.id}>
+              <Fragment key={item.id}>
                 {item.type === "MenuItem" && (
                   <MenuItem label={item.label} url={item.url} />
                 )}
                 {item.type === "MenuList" && (
                   <MenuList data={item.children} label={item.label} />
                 )}
-              </React.Fragment>
+              </Fragment>
             ))}
           </NavigationMenuList>
         </NavigationMenu>
-        <InputGroup className="hidden md:flex bg-[#F0F0F0] mr-3 lg:mr-10">
-          <InputGroup.Text>
-            <Image
-              priority
-              src="/icons/search.svg"
-              height={20}
-              width={20}
-              alt="search"
-              className="min-w-5 min-h-5"
+        <form
+          onSubmit={handleSearchSubmit}
+          className="hidden md:flex w-full max-w-[320px] lg:max-w-md mr-3 lg:mr-10"
+        >
+          <InputGroup className="bg-[#F0F0F0]">
+            <InputGroup.Text className="pl-0">
+              <button
+                type="submit"
+                aria-label="Search"
+                className="flex items-center justify-center rounded-full bg-transparent p-3 text-black/60 transition hover:text-black"
+              >
+                <Image
+                  priority
+                  src="/icons/search.svg"
+                  height={20}
+                  width={20}
+                  alt="search"
+                  className="min-w-5 min-h-5"
+                />
+              </button>
+            </InputGroup.Text>
+            <InputGroup.Input
+              type="search"
+              name="search"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search for products..."
+              className="bg-transparent placeholder:text-black/40"
             />
-          </InputGroup.Text>
-          <InputGroup.Input
-            type="search"
-            name="search"
-            placeholder="Search for products..."
-            className="bg-transparent placeholder:text-black/40"
-          />
-        </InputGroup>
+          </InputGroup>
+        </form>
         <div className="flex items-center">
           <Link href="/search" className="block md:hidden mr-[14px] p-1">
             <Image
@@ -131,7 +172,7 @@ const TopNavbar = () => {
             />
           </Link>
           <CartBtn />
-          <Link href="/#signin" className="p-1">
+          <Link href="/profile" className="p-1">
             <Image
               priority
               src="/icons/user.svg"
