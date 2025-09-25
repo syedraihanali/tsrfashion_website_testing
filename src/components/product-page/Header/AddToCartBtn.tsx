@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { RootState } from "@/lib/store";
 import { Product } from "@/types/product.types";
 import React from "react";
-import { toast } from "sonner";
+import { toast } from "react-toastify";
 
 const AddToCartBtn = ({ data }: { data: Product & { quantity: number } }) => {
   const dispatch = useAppDispatch();
@@ -30,9 +30,17 @@ const AddToCartBtn = ({ data }: { data: Product & { quantity: number } }) => {
           })
         );
 
-        toast.success("Added to cart", {
-          description: `${data.title} (${colorSelection.name} / ${sizeSelection}) was added to your bag.`,
-        });
+        toast.success(
+          <div className="space-y-1">
+            <p className="font-medium text-zinc-900">Added to cart</p>
+            <p className="text-sm text-zinc-500">
+              {`${data.title} (${colorSelection.name} / ${sizeSelection}) was added to your bag.`}
+            </p>
+          </div>,
+          {
+            icon: false,
+          }
+        );
       }}
     >
       Add to Cart
