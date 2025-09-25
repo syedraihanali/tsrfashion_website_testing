@@ -5,6 +5,7 @@ import { Provider } from "react-redux";
 import { makeStore } from "../lib/store";
 import { PersistGate } from "redux-persist/integration/react";
 import SpinnerbLoader from "@/components/ui/SpinnerbLoader";
+import Toaster from "@/components/ui/toaster";
 
 type Props = {
   children: React.ReactNode;
@@ -23,7 +24,10 @@ const Providers = ({ children }: Props) => {
         }
         persistor={persistor}
       >
-        {children}
+        <>
+          {children}
+          <Toaster richColors closeButton expand={false} />
+        </>
       </PersistGate>
     </Provider>
   );

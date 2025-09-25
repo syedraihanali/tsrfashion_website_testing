@@ -5,6 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/hooks/redux";
 import { RootState } from "@/lib/store";
 import { Product } from "@/types/product.types";
 import React from "react";
+import { toast } from "sonner";
 
 const AddToCartBtn = ({ data }: { data: Product & { quantity: number } }) => {
   const dispatch = useAppDispatch();
@@ -16,7 +17,7 @@ const AddToCartBtn = ({ data }: { data: Product & { quantity: number } }) => {
     <button
       type="button"
       className="bg-black w-full ml-3 sm:ml-5 rounded-full h-11 md:h-[52px] text-sm sm:text-base text-white hover:bg-black/80 transition-all"
-      onClick={() =>
+      onClick={() => {
         dispatch(
           addToCart({
             id: data.id,
@@ -27,8 +28,12 @@ const AddToCartBtn = ({ data }: { data: Product & { quantity: number } }) => {
             discount: data.discount,
             quantity: data.quantity,
           })
-        )
-      }
+        );
+
+        toast.success("Added to cart", {
+          description: `${data.title} (${colorSelection.name} / ${sizeSelection}) was added to your bag.`,
+        });
+      }}
     >
       Add to Cart
     </button>
