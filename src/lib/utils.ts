@@ -5,6 +5,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const compareArrays = (a: any[], b: any[]) => {
+export const compareArrays = <T>(a: T[], b: T[]): boolean => {
   return a.toString() === b.toString();
 };

@@ -11,7 +11,6 @@ const MOBILE_QUERY = "(max-width: 767px)";
 export const Toaster = ({
   position,
   toastClassName,
-  bodyClassName,
   hideProgressBar,
   theme,
   ...props
@@ -31,10 +30,9 @@ export const Toaster = ({
       newestOnTop={false}
       theme={theme ?? "light"}
       toastClassName={cn(
-        "!bg-white !border !border-zinc-200 !shadow-lg !rounded-xl !px-4 !py-3 !text-sm !text-zinc-900",
+        "!bg-white !border !border-zinc-200 !shadow-lg !rounded-xl !px-4 !py-3 !text-sm !text-zinc-900 !text-zinc-500",
         toastClassName
       )}
-      bodyClassName={cn("!text-zinc-500", bodyClassName)}
       {...props}
     />
   );

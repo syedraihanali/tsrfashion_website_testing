@@ -26,7 +26,7 @@ const Providers = ({ children }: Props) => {
       >
         <>
           {children}
-          <Toaster richColors closeButton expand={false} />
+          <Toaster closeButton />
         </>
       </PersistGate>
     </Provider>
