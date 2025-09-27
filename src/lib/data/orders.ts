@@ -29,7 +29,6 @@ export type OrderTracking = {
     addressLine1: string;
     addressLine2?: string;
     city: string;
-    division: string;
     postalCode: string;
   };
   statusHistory: OrderTimelineStep[];
@@ -53,7 +52,6 @@ export const sampleOrders: OrderTracking[] = [
       addressLine1: "House 12, Road 7",
       addressLine2: "Dhanmondi",
       city: "Dhaka",
-      division: "Dhaka",
       postalCode: "1205",
     },
     statusHistory: [
@@ -107,7 +105,6 @@ export const sampleOrders: OrderTracking[] = [
       addressLine1: "Flat B2, Building 23",
       addressLine2: "Agrabad Commercial Area",
       city: "Chattogram",
-      division: "Chattogram",
       postalCode: "4000",
     },
     statusHistory: [

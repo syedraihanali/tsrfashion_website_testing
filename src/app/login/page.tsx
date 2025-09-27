@@ -11,8 +11,7 @@ import { cn } from "@/lib/utils";
 import InputGroup from "@/components/ui/input-group";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
-
-const AUTH_SESSION_KEY = "tsr-fashion-current-user";
+import { AUTH_SESSION_KEY } from "@/lib/constants";
 
 const loginSchema = z.object({
   email: z

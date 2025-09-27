@@ -277,9 +277,7 @@ export default function OrderTrackingPage() {
                       </p>
                     )}
                     <p className="text-sm text-black/70">
-                      {selectedOrder.shippingAddress.city},
-                      {" "}
-                      {selectedOrder.shippingAddress.division}
+                      {selectedOrder.shippingAddress.city}
                       {" "}
                       {selectedOrder.shippingAddress.postalCode}
                     </p>
