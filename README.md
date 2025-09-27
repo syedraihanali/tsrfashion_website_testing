@@ -91,6 +91,8 @@ To get started with Shopco locally, follow these steps:
 
    If you are working offline, you can generate the SQL script with `npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script` and apply it manually to your database.
 
+   > **Tip:** The project automatically runs `prisma generate` and, when `DATABASE_URL` is configured, `prisma migrate deploy` after `npm install`. Set `SKIP_PRISMA_MIGRATE=true` if you need to skip migrations during installation.
+
 5. **Run the development server:**
 
    ```bash
