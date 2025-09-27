@@ -19,6 +19,8 @@ model User {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   sessions     Session[]
+  orders       Order[]
+  supportMessages SupportMessage[]
 }
 
 model Session {
@@ -28,4 +30,40 @@ model Session {
   userId    String
   createdAt DateTime @default(now())
   expiresAt DateTime
+}
+
+model Order {
+  id                String   @id @default(cuid())
+  orderNumber       String   @unique
+  user              User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId            String?
+  placedOn          DateTime @default(now())
+  totalAmount       Int
+  itemsCount        Int
+  status            String
+  paymentMethod     String
+  estimatedDelivery DateTime?
+  notes             String?
+  shippingName      String
+  shippingPhone     String
+  shippingAddress1  String
+  shippingAddress2  String?
+  shippingCity      String
+  shippingPostal    String
+  statusHistory     Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model SupportMessage {
+  id        String   @id @default(cuid())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId    String?
+  fullName  String
+  email     String
+  subject   String
+  message   String
+  orderNumber String?
+  createdAt DateTime @default(now())
+  resolved  Boolean  @default(false)
 }
