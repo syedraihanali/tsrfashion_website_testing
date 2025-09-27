@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -56,6 +56,14 @@ const getStoredUsers = () => {
 export default function LoginPage() {
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
+  const fieldBaseId = useId();
+  const fieldIds = useMemo(
+    () => ({
+      email: `${fieldBaseId}-email`,
+      password: `${fieldBaseId}-password`,
+    }),
+    [fieldBaseId]
+  );
   const {
     register,
     handleSubmit,
@@ -124,7 +132,10 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
             <div>
-              <label className="mb-2 block text-sm font-medium text-black">
+              <label
+                htmlFor={fieldIds.email}
+                className="mb-2 block text-sm font-medium text-black"
+              >
                 Email address
               </label>
               <InputGroup className="bg-[#F0F0F0]">
@@ -132,16 +143,31 @@ export default function LoginPage() {
                   type="email"
                   placeholder="name@example.com"
                   className="bg-transparent"
+                  id={fieldIds.email}
+                  autoComplete="email"
+                  aria-invalid={errors.email ? "true" : "false"}
+                  aria-describedby={
+                    errors.email ? `${fieldIds.email}-error` : undefined
+                  }
                   {...register("email")}
                 />
               </InputGroup>
               {errors.email && (
-                <p className="mt-2 text-sm text-red-500">{errors.email.message}</p>
+                <p
+                  id={`${fieldIds.email}-error`}
+                  className="mt-2 text-sm text-red-500"
+                  role="alert"
+                >
+                  {errors.email.message}
+                </p>
               )}
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-black">
+              <label
+                htmlFor={fieldIds.password}
+                className="mb-2 block text-sm font-medium text-black"
+              >
                 Password
               </label>
               <InputGroup className="bg-[#F0F0F0]">
@@ -149,11 +175,23 @@ export default function LoginPage() {
                   type="password"
                   placeholder="Enter your password"
                   className="bg-transparent"
+                  id={fieldIds.password}
+                  autoComplete="current-password"
+                  aria-invalid={errors.password ? "true" : "false"}
+                  aria-describedby={
+                    errors.password
+                      ? `${fieldIds.password}-error`
+                      : undefined
+                  }
                   {...register("password")}
                 />
               </InputGroup>
               {errors.password && (
-                <p className="mt-2 text-sm text-red-500">
+                <p
+                  id={`${fieldIds.password}-error`}
+                  className="mt-2 text-sm text-red-500"
+                  role="alert"
+                >
                   {errors.password.message}
                 </p>
               )}

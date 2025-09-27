@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -62,6 +62,17 @@ const getStoredUsers = () => {
 export default function SignupPage() {
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
+  const fieldBaseId = useId();
+  const fieldIds = useMemo(
+    () => ({
+      fullName: `${fieldBaseId}-full-name`,
+      email: `${fieldBaseId}-email`,
+      phone: `${fieldBaseId}-phone`,
+      password: `${fieldBaseId}-password`,
+      confirmPassword: `${fieldBaseId}-confirm-password`,
+    }),
+    [fieldBaseId]
+  );
   const {
     register,
     handleSubmit,
@@ -128,25 +139,43 @@ export default function SignupPage() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
             <div>
-              <label className="mb-2 block text-sm font-medium text-black">
+              <label
+                htmlFor={fieldIds.fullName}
+                className="mb-2 block text-sm font-medium text-black"
+              >
                 Full name
               </label>
               <InputGroup className="bg-[#F0F0F0]">
                 <InputGroup.Input
                   placeholder="e.g. Nafisa Karim"
                   className="bg-transparent"
+                  id={fieldIds.fullName}
+                  autoComplete="name"
+                  aria-invalid={errors.fullName ? "true" : "false"}
+                  aria-describedby={
+                    errors.fullName
+                      ? `${fieldIds.fullName}-error`
+                      : undefined
+                  }
                   {...register("fullName")}
                 />
               </InputGroup>
               {errors.fullName && (
-                <p className="mt-2 text-sm text-red-500">
+                <p
+                  id={`${fieldIds.fullName}-error`}
+                  className="mt-2 text-sm text-red-500"
+                  role="alert"
+                >
                   {errors.fullName.message}
                 </p>
               )}
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-black">
+              <label
+                htmlFor={fieldIds.email}
+                className="mb-2 block text-sm font-medium text-black"
+              >
                 Email address
               </label>
               <InputGroup className="bg-[#F0F0F0]">
@@ -154,16 +183,31 @@ export default function SignupPage() {
                   type="email"
                   placeholder="name@example.com"
                   className="bg-transparent"
+                  id={fieldIds.email}
+                  autoComplete="email"
+                  aria-invalid={errors.email ? "true" : "false"}
+                  aria-describedby={
+                    errors.email ? `${fieldIds.email}-error` : undefined
+                  }
                   {...register("email")}
                 />
               </InputGroup>
               {errors.email && (
-                <p className="mt-2 text-sm text-red-500">{errors.email.message}</p>
+                <p
+                  id={`${fieldIds.email}-error`}
+                  className="mt-2 text-sm text-red-500"
+                  role="alert"
+                >
+                  {errors.email.message}
+                </p>
               )}
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-black">
+              <label
+                htmlFor={fieldIds.phone}
+                className="mb-2 block text-sm font-medium text-black"
+              >
                 Mobile number
               </label>
               <InputGroup className="bg-[#F0F0F0]">
@@ -171,16 +215,31 @@ export default function SignupPage() {
                   type="tel"
                   placeholder="01XXXXXXXXX"
                   className="bg-transparent"
+                  id={fieldIds.phone}
+                  autoComplete="tel"
+                  aria-invalid={errors.phone ? "true" : "false"}
+                  aria-describedby={
+                    errors.phone ? `${fieldIds.phone}-error` : undefined
+                  }
                   {...register("phone")}
                 />
               </InputGroup>
               {errors.phone && (
-                <p className="mt-2 text-sm text-red-500">{errors.phone.message}</p>
+                <p
+                  id={`${fieldIds.phone}-error`}
+                  className="mt-2 text-sm text-red-500"
+                  role="alert"
+                >
+                  {errors.phone.message}
+                </p>
               )}
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-black">
+              <label
+                htmlFor={fieldIds.password}
+                className="mb-2 block text-sm font-medium text-black"
+              >
                 Password
               </label>
               <InputGroup className="bg-[#F0F0F0]">
@@ -188,18 +247,33 @@ export default function SignupPage() {
                   type="password"
                   placeholder="Create a strong password"
                   className="bg-transparent"
+                  id={fieldIds.password}
+                  autoComplete="new-password"
+                  aria-invalid={errors.password ? "true" : "false"}
+                  aria-describedby={
+                    errors.password
+                      ? `${fieldIds.password}-error`
+                      : undefined
+                  }
                   {...register("password")}
                 />
               </InputGroup>
               {errors.password && (
-                <p className="mt-2 text-sm text-red-500">
+                <p
+                  id={`${fieldIds.password}-error`}
+                  className="mt-2 text-sm text-red-500"
+                  role="alert"
+                >
                   {errors.password.message}
                 </p>
               )}
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-black">
+              <label
+                htmlFor={fieldIds.confirmPassword}
+                className="mb-2 block text-sm font-medium text-black"
+              >
                 Confirm password
               </label>
               <InputGroup className="bg-[#F0F0F0]">
@@ -207,11 +281,23 @@ export default function SignupPage() {
                   type="password"
                   placeholder="Re-enter your password"
                   className="bg-transparent"
+                  id={fieldIds.confirmPassword}
+                  autoComplete="new-password"
+                  aria-invalid={errors.confirmPassword ? "true" : "false"}
+                  aria-describedby={
+                    errors.confirmPassword
+                      ? `${fieldIds.confirmPassword}-error`
+                      : undefined
+                  }
                   {...register("confirmPassword")}
                 />
               </InputGroup>
               {errors.confirmPassword && (
-                <p className="mt-2 text-sm text-red-500">
+                <p
+                  id={`${fieldIds.confirmPassword}-error`}
+                  className="mt-2 text-sm text-red-500"
+                  role="alert"
+                >
                   {errors.confirmPassword.message}
                 </p>
               )}

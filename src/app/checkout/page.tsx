@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useId } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -121,6 +121,22 @@ export default function CheckoutPage() {
   const [shippingDetails, setShippingDetails] =
     useState<CheckoutFormValues | null>(null);
   const [selectedPayment, setSelectedPayment] = useState<string>("");
+  const formBaseId = useId();
+  const fieldIds = useMemo(
+    () => ({
+      fullName: `${formBaseId}-full-name`,
+      email: `${formBaseId}-email`,
+      phone: `${formBaseId}-phone`,
+      division: `${formBaseId}-division`,
+      city: `${formBaseId}-city`,
+      postalCode: `${formBaseId}-postal-code`,
+      addressLine1: `${formBaseId}-address-line-1`,
+      apartment: `${formBaseId}-apartment`,
+      roadNo: `${formBaseId}-road-no`,
+      additionalInfo: `${formBaseId}-additional-info`,
+    }),
+    [formBaseId]
+  );
 
   const {
     control,
@@ -375,24 +391,42 @@ export default function CheckoutPage() {
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-black">
+                    <label
+                      htmlFor={fieldIds.fullName}
+                      className="mb-2 block text-sm font-medium text-black"
+                    >
                       Full name
                     </label>
                     <InputGroup className="bg-[#F0F0F0]">
                       <InputGroup.Input
                         placeholder="e.g. Rahim Uddin"
                         className="bg-transparent"
+                        id={fieldIds.fullName}
+                        autoComplete="name"
+                        aria-invalid={errors.fullName ? "true" : "false"}
+                        aria-describedby={
+                          errors.fullName
+                            ? `${fieldIds.fullName}-error`
+                            : undefined
+                        }
                         {...register("fullName")}
                       />
                     </InputGroup>
                     {errors.fullName && (
-                      <p className="mt-2 text-sm text-red-500">
+                      <p
+                        id={`${fieldIds.fullName}-error`}
+                        className="mt-2 text-sm text-red-500"
+                        role="alert"
+                      >
                         {errors.fullName.message}
                       </p>
                     )}
                   </div>
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-black">
+                    <label
+                      htmlFor={fieldIds.email}
+                      className="mb-2 block text-sm font-medium text-black"
+                    >
                       Email address
                     </label>
                     <InputGroup className="bg-[#F0F0F0]">
@@ -400,11 +434,23 @@ export default function CheckoutPage() {
                         type="email"
                         placeholder="name@example.com"
                         className="bg-transparent"
+                        id={fieldIds.email}
+                        autoComplete="email"
+                        aria-invalid={errors.email ? "true" : "false"}
+                        aria-describedby={
+                          errors.email
+                            ? `${fieldIds.email}-error`
+                            : undefined
+                        }
                         {...register("email")}
                       />
                     </InputGroup>
                     {errors.email && (
-                      <p className="mt-2 text-sm text-red-500">
+                      <p
+                        id={`${fieldIds.email}-error`}
+                        className="mt-2 text-sm text-red-500"
+                        role="alert"
+                      >
                         {errors.email.message}
                       </p>
                     )}
@@ -412,7 +458,10 @@ export default function CheckoutPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-black">
+                    <label
+                      htmlFor={fieldIds.phone}
+                      className="mb-2 block text-sm font-medium text-black"
+                    >
                       Phone number
                     </label>
                     <InputGroup className="bg-[#F0F0F0]">
@@ -420,17 +469,32 @@ export default function CheckoutPage() {
                         type="tel"
                         placeholder="01XXXXXXXXX"
                         className="bg-transparent"
+                        id={fieldIds.phone}
+                        autoComplete="tel"
+                        aria-invalid={errors.phone ? "true" : "false"}
+                        aria-describedby={
+                          errors.phone
+                            ? `${fieldIds.phone}-error`
+                            : undefined
+                        }
                         {...register("phone")}
                       />
                     </InputGroup>
                     {errors.phone && (
-                      <p className="mt-2 text-sm text-red-500">
+                      <p
+                        id={`${fieldIds.phone}-error`}
+                        className="mt-2 text-sm text-red-500"
+                        role="alert"
+                      >
                         {errors.phone.message}
                       </p>
                     )}
                   </div>
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-black">
+                    <label
+                      htmlFor={fieldIds.postalCode}
+                      className="mb-2 block text-sm font-medium text-black"
+                    >
                       Postal code
                     </label>
                     <InputGroup className="bg-[#F0F0F0]">
@@ -439,11 +503,23 @@ export default function CheckoutPage() {
                         inputMode="numeric"
                         placeholder="e.g. 1207"
                         className="bg-transparent"
+                        id={fieldIds.postalCode}
+                        autoComplete="postal-code"
+                        aria-invalid={errors.postalCode ? "true" : "false"}
+                        aria-describedby={
+                          errors.postalCode
+                            ? `${fieldIds.postalCode}-error`
+                            : undefined
+                        }
                         {...register("postalCode")}
                       />
                     </InputGroup>
                     {errors.postalCode && (
-                      <p className="mt-2 text-sm text-red-500">
+                      <p
+                        id={`${fieldIds.postalCode}-error`}
+                        className="mt-2 text-sm text-red-500"
+                        role="alert"
+                      >
                         {errors.postalCode.message}
                       </p>
                     )}
@@ -451,7 +527,10 @@ export default function CheckoutPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-black">
+                    <label
+                      htmlFor={fieldIds.division}
+                      className="mb-2 block text-sm font-medium text-black"
+                    >
                       Division
                     </label>
                     <Controller
@@ -464,7 +543,16 @@ export default function CheckoutPage() {
                           }}
                           value={field.value || ""}
                         >
-                          <SelectTrigger className="h-12 rounded-full border-black/20 bg-[#F0F0F0] px-4 text-sm">
+                          <SelectTrigger
+                            id={fieldIds.division}
+                            aria-invalid={errors.division ? "true" : "false"}
+                            aria-describedby={
+                              errors.division
+                                ? `${fieldIds.division}-error`
+                                : undefined
+                            }
+                            className="h-12 rounded-full border-black/20 bg-[#F0F0F0] px-4 text-sm"
+                          >
                             <SelectValue placeholder="Select a division" />
                           </SelectTrigger>
                           <SelectContent className="rounded-2xl border-black/10">
@@ -478,13 +566,20 @@ export default function CheckoutPage() {
                       )}
                     />
                     {errors.division && (
-                      <p className="mt-2 text-sm text-red-500">
+                      <p
+                        id={`${fieldIds.division}-error`}
+                        className="mt-2 text-sm text-red-500"
+                        role="alert"
+                      >
                         {errors.division.message}
                       </p>
                     )}
                   </div>
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-black">
+                    <label
+                      htmlFor={fieldIds.city}
+                      className="mb-2 block text-sm font-medium text-black"
+                    >
                       City / District
                     </label>
                     <Controller
@@ -496,14 +591,23 @@ export default function CheckoutPage() {
                           value={field.value || ""}
                           disabled={availableCities.length === 0}
                         >
-                          <SelectTrigger className="h-12 rounded-full border-black/20 bg-[#F0F0F0] px-4 text-sm disabled:opacity-60">
+                          <SelectTrigger
+                            id={fieldIds.city}
+                            aria-invalid={errors.city ? "true" : "false"}
+                            aria-describedby={
+                              errors.city
+                                ? `${fieldIds.city}-error`
+                                : undefined
+                            }
+                            className="h-12 rounded-full border-black/20 bg-[#F0F0F0] px-4 text-sm disabled:opacity-60"
+                          >
                             <SelectValue
                               placeholder={
                                 availableCities.length > 0
                                   ? "Select a city"
                                   : "Select division first"
-                              }
-                            />
+                            }
+                          />
                           </SelectTrigger>
                           <SelectContent className="rounded-2xl border-black/10">
                             {availableCities.map((city) => (
@@ -516,7 +620,11 @@ export default function CheckoutPage() {
                       )}
                     />
                     {errors.city && (
-                      <p className="mt-2 text-sm text-red-500">
+                      <p
+                        id={`${fieldIds.city}-error`}
+                        className="mt-2 text-sm text-red-500"
+                        role="alert"
+                      >
                         {errors.city.message}
                       </p>
                     )}
@@ -524,30 +632,52 @@ export default function CheckoutPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-black">
+                    <label
+                      htmlFor={fieldIds.addressLine1}
+                      className="mb-2 block text-sm font-medium text-black"
+                    >
                       Street address
                     </label>
                     <InputGroup className="bg-[#F0F0F0]">
                       <InputGroup.Input
                         placeholder="House, road number"
                         className="bg-transparent"
+                        id={fieldIds.addressLine1}
+                        autoComplete="street-address"
+                        aria-invalid={
+                          errors.addressLine1 ? "true" : "false"
+                        }
+                        aria-describedby={
+                          errors.addressLine1
+                            ? `${fieldIds.addressLine1}-error`
+                            : undefined
+                        }
                         {...register("addressLine1")}
                       />
                     </InputGroup>
                     {errors.addressLine1 && (
-                      <p className="mt-2 text-sm text-red-500">
+                      <p
+                        id={`${fieldIds.addressLine1}-error`}
+                        className="mt-2 text-sm text-red-500"
+                        role="alert"
+                      >
                         {errors.addressLine1.message}
                       </p>
                     )}
                   </div>
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-black">
+                    <label
+                      htmlFor={fieldIds.apartment}
+                      className="mb-2 block text-sm font-medium text-black"
+                    >
                       Apartment / Floor (optional)
                     </label>
                     <InputGroup className="bg-[#F0F0F0]">
                       <InputGroup.Input
                         placeholder="Apartment, floor, block"
                         className="bg-transparent"
+                        id={fieldIds.apartment}
+                        autoComplete="address-line2"
                         {...register("apartment")}
                       />
                     </InputGroup>
@@ -555,23 +685,32 @@ export default function CheckoutPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-black">
+                    <label
+                      htmlFor={fieldIds.roadNo}
+                      className="mb-2 block text-sm font-medium text-black"
+                    >
                       Road number (optional)
                     </label>
                     <InputGroup className="bg-[#F0F0F0]">
                       <InputGroup.Input
                         placeholder="Road / holding number"
                         className="bg-transparent"
+                        id={fieldIds.roadNo}
+                        autoComplete="address-line2"
                         {...register("roadNo")}
                       />
                     </InputGroup>
                   </div>
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-black">
+                    <label
+                      htmlFor={fieldIds.additionalInfo}
+                      className="mb-2 block text-sm font-medium text-black"
+                    >
                       Delivery notes (optional)
                     </label>
                     <div className="rounded-2xl border border-black/10 bg-[#F0F0F0] px-4 py-3">
                       <textarea
+                        id={fieldIds.additionalInfo}
                         rows={3}
                         className="h-full w-full resize-none bg-transparent text-sm outline-none placeholder:text-sm placeholder:text-black/40"
                         placeholder="Nearby landmark or delivery instruction"
