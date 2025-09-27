@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import InputGroup from "@/components/ui/input-group";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
+import { AUTH_SESSION_KEY } from "@/lib/constants";
 
 const signupSchema = z
   .object({
@@ -88,16 +89,32 @@ export default function SignupPage() {
         }),
       });
 
-      const data = (await response.json().catch(() => null)) as { message?: string } | null;
+      const data = (await response
+        .json()
+        .catch(() => null)) as
+        | { message?: string; user?: { id: string; email: string; fullName: string; phone?: string | null } }
+        | null;
 
       if (!response.ok) {
         toast.error(data?.message ?? "We couldn't complete your registration. Please try again.");
         return;
       }
 
-      toast.success("Account created successfully! You can now log in.");
+      if (data?.user && typeof window !== "undefined") {
+        window.localStorage.setItem(
+          AUTH_SESSION_KEY,
+          JSON.stringify({
+            id: data.user.id,
+            email: data.user.email,
+            fullName: data.user.fullName,
+            phone: data.user.phone ?? "",
+          })
+        );
+      }
+
+      toast.success("Account created successfully! You're now signed in.");
       reset();
-      router.push("/login");
+      router.push("/profile");
     } catch (error) {
       console.error(error);
       toast.error("We couldn't complete your registration. Please try again.");

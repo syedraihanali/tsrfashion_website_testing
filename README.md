@@ -78,10 +78,10 @@ To get started with Shopco locally, follow these steps:
    Create a `.env` file in the project root with your database connection string:
 
    ```env
-   DATABASE_URL="postgresql://tahir:Raihan12@128.199.31.100:5432/tsr_db"
+   DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
    ```
 
-   > Replace the credentials if you are using a different PostgreSQL instance.
+   > Replace the placeholder values with your own PostgreSQL connection details.
 
 4. **Run database migrations:**
 

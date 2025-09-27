@@ -3,6 +3,7 @@ import { z } from "zod";
 import bcrypt from "bcryptjs";
 
 import { prisma } from "@/lib/prisma";
+import { createSession, setSessionCookie } from "@/lib/auth";
 
 const signupSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
@@ -51,6 +52,9 @@ export async function POST(request: Request) {
         createdAt: true,
       },
     });
+
+    const session = await createSession(user.id);
+    setSessionCookie(session);
 
     return NextResponse.json({ user }, { status: 201 });
   } catch (error) {
