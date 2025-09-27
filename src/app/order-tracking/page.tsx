@@ -124,7 +124,7 @@ export default function OrderTrackingPage() {
   }, []);
 
   const handleLookup = useCallback(
-    (id: string) => {
+    async (id: string) => {
       const trimmed = id.trim();
       if (trimmed.length === 0) {
         setSelectedOrder(null);
@@ -137,20 +137,54 @@ export default function OrderTrackingPage() {
       );
 
       if (!nextOrder) {
-        setSelectedOrder(null);
-        setError(`We could not find any order with the ID "${trimmed}".`);
+        try {
+          const response = await fetch(
+            `/api/orders/${encodeURIComponent(trimmed)}`
+          );
+
+          if (!response.ok) {
+            if (response.status === 404) {
+              setSelectedOrder(null);
+              setError(`We could not find any order with the ID "${trimmed}".`);
+              return;
+            }
+
+            const data = (await response.json().catch(() => null)) as
+              | { message?: string }
+              | null;
+            setSelectedOrder(null);
+            setError(
+              data?.message ??
+                "We couldn't check our records right now. Please try again."
+            );
+            return;
+          }
+
+          const data = (await response.json()) as { order: OrderTracking };
+          setError(null);
+          setOrders((previous) => mergeOrders(previous, [data.order]));
+          setSelectedOrder(data.order);
+          return;
+        } catch (lookupError) {
+          console.error("Failed to fetch order details", lookupError);
+          setSelectedOrder(null);
+          setError(
+            "We couldn't check our records right now. Please try again."
+          );
+          return;
+        }
+      } else {
+        setError(null);
+        setSelectedOrder(nextOrder);
         return;
       }
-
-      setError(null);
-      setSelectedOrder(nextOrder);
     },
     [orders]
   );
 
   useEffect(() => {
     if (initialOrderId) {
-      handleLookup(initialOrderId);
+      void handleLookup(initialOrderId);
     }
   }, [handleLookup, initialOrderId]);
 
@@ -158,7 +192,7 @@ export default function OrderTrackingPage() {
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    handleLookup(orderId);
+    void handleLookup(orderId);
   };
 
   return (

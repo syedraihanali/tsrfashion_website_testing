@@ -63,6 +63,13 @@ const data: NavMenu = [
     url: "/shop#new-arrivals",
     children: [],
   },
+  {
+    id: 4,
+    type: "MenuItem",
+    label: "Support",
+    url: "/support",
+    children: [],
+  },
   // {
   //   id: 4,
   //   type: "MenuItem",

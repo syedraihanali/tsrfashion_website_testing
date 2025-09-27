@@ -435,9 +435,11 @@ export default function CheckoutPage() {
     ).toISOString();
     const orderId = generateOrderId();
 
-    const totalAmount = cart.items.reduce((total, item) => {
-      return total + getCartItemFinalPrice(item) * item.quantity;
-    }, 0);
+    const totalAmount = Math.round(
+      cart.items.reduce((total, item) => {
+        return total + getCartItemFinalPrice(item) * item.quantity;
+      }, 0)
+    );
 
     const addressLine2 = [
       shippingDetails.apartment,
@@ -512,6 +514,50 @@ export default function CheckoutPage() {
       } catch (error) {
         console.error("Failed to persist order", error);
       }
+    }
+
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          orderNumber: order.id,
+          placedOn: order.placedOn,
+          totalAmount: Math.round(order.totalAmount),
+          itemsCount: order.itemsCount,
+          status: order.status,
+          paymentMethod: order.paymentMethod,
+          estimatedDelivery: order.estimatedDelivery,
+          notes: order.notes,
+          shippingAddress: {
+            name: order.shippingAddress.name,
+            phone: order.shippingAddress.phone,
+            addressLine1: order.shippingAddress.addressLine1,
+            addressLine2: order.shippingAddress.addressLine2,
+            city: order.shippingAddress.city,
+            postalCode: order.shippingAddress.postalCode,
+          },
+          statusHistory: order.statusHistory,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as
+          | { message?: string }
+          | null;
+
+        toast.warning(
+          data?.message ??
+            "We saved your order locally but couldn't sync it. Please try again later."
+        );
+      }
+    } catch (error) {
+      console.error("Failed to sync order with backend", error);
+      toast.warning(
+        "We saved your order locally but couldn't sync it. Please try again later."
+      );
     }
 
     dispatch(clearCart());

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -27,6 +27,44 @@ const loginSchema = z.object({
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
+
+const profileUpdateSchema = z.object({
+  fullName: z
+    .string({ required_error: "Full name is required" })
+    .min(1, "Full name is required")
+    .max(255, "Full name is too long"),
+  phone: z
+    .union([
+      z
+        .string()
+        .min(6, "Enter a valid phone number")
+        .max(20, "Enter a valid phone number"),
+      z.literal(""),
+    ])
+    .optional()
+    .transform((value) => value ?? ""),
+});
+
+type ProfileFormValues = z.infer<typeof profileUpdateSchema>;
+
+const passwordUpdateSchema = z
+  .object({
+    currentPassword: z
+      .string({ required_error: "Current password is required" })
+      .min(1, "Current password is required"),
+    newPassword: z
+      .string({ required_error: "New password is required" })
+      .min(6, "New password must be at least 6 characters"),
+    confirmPassword: z
+      .string({ required_error: "Confirm your new password" })
+      .min(6, "Confirm password must be at least 6 characters"),
+  })
+  .refine((values) => values.newPassword === values.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+type PasswordFormValues = z.infer<typeof passwordUpdateSchema>;
 
 type CurrentUser = {
   id: string;
@@ -317,17 +355,289 @@ const ProfileSummary = ({
             Need to update your password?
           </h3>
           <p className="mt-1 text-sm text-black/60">
-            Head to the login page to reset it securely with your email
-            address.
+            Use the form below to change it instantly and keep your account
+            secure. We&apos;ll log you out of other devices automatically.
           </p>
           <Link
-            href="/login"
+            href="/support"
             className="mt-3 inline-flex h-[44px] items-center justify-center rounded-full border border-black/20 px-5 text-sm font-medium text-black transition hover:border-black"
           >
-            Go to login
+            Contact support
           </Link>
         </div>
       </aside>
+    </section>
+  );
+};
+
+const AccountUpdateForm = ({
+  user,
+  onUserUpdate,
+}: {
+  user: CurrentUser;
+  onUserUpdate: (nextUser: CurrentUser) => void;
+}) => {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileUpdateSchema),
+    defaultValues: {
+      fullName: user.fullName,
+      phone: user.phone ?? "",
+    },
+  });
+
+  useEffect(() => {
+    reset({
+      fullName: user.fullName,
+      phone: user.phone ?? "",
+    });
+  }, [reset, user.fullName, user.phone]);
+
+  const onSubmit = async (values: ProfileFormValues) => {
+    const normalizedFullName = values.fullName.trim();
+    const normalizedPhone = values.phone.trim();
+
+    const payload: { fullName?: string; phone?: string } = {};
+
+    if (normalizedFullName !== user.fullName) {
+      payload.fullName = normalizedFullName;
+    }
+
+    if (normalizedPhone !== (user.phone ?? "")) {
+      payload.phone = normalizedPhone;
+    }
+
+    if (Object.keys(payload).length === 0) {
+      toast.info("No changes to update.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/auth/profile", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = (await response.json().catch(() => null)) as
+        | { user?: CurrentUser; message?: string }
+        | null;
+
+      if (!response.ok) {
+        toast.error(
+          data?.message ?? "We couldn't update your profile. Please try again."
+        );
+        return;
+      }
+
+      if (data?.user) {
+        onUserUpdate(data.user);
+        reset({
+          fullName: data.user.fullName,
+          phone: data.user.phone ?? "",
+        });
+      }
+
+      toast.success("Profile updated successfully.");
+    } catch (error) {
+      console.error("Failed to update profile", error);
+      toast.error("We couldn't update your profile. Please try again.");
+    }
+  };
+
+  return (
+    <section className="space-y-6 rounded-[24px] border border-black/10 bg-white p-6 sm:p-8">
+      <div>
+        <h2 className="text-xl font-semibold text-black">Update account</h2>
+        <p className="mt-1 text-sm text-black/60">
+          Update your name or phone number. These details help us personalise
+          your experience and contact you about orders.
+        </p>
+      </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <div>
+          <label className="mb-2 block text-sm font-medium text-black">
+            Full name
+          </label>
+          <InputGroup className="bg-[#F0F0F0]">
+            <InputGroup.Input
+              type="text"
+              placeholder="Your full name"
+              className="bg-transparent"
+              autoComplete="name"
+              aria-invalid={errors.fullName ? "true" : "false"}
+              {...register("fullName")}
+            />
+          </InputGroup>
+          {errors.fullName && (
+            <p className="mt-2 text-sm text-red-500">
+              {errors.fullName.message}
+            </p>
+          )}
+        </div>
+        <div>
+          <label className="mb-2 block text-sm font-medium text-black">
+            Phone number
+          </label>
+          <InputGroup className="bg-[#F0F0F0]">
+            <InputGroup.Input
+              type="tel"
+              placeholder="Add a contact number"
+              className="bg-transparent"
+              autoComplete="tel"
+              aria-invalid={errors.phone ? "true" : "false"}
+              {...register("phone")}
+            />
+          </InputGroup>
+          <p className="mt-2 text-xs text-black/50">
+            Leave blank to remove your phone number from your profile.
+          </p>
+          {errors.phone && (
+            <p className="mt-2 text-sm text-red-500">{errors.phone.message}</p>
+          )}
+        </div>
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="h-[50px] rounded-full bg-black px-6 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-black/50"
+        >
+          {isSubmitting ? "Saving changes…" : "Save changes"}
+        </Button>
+      </form>
+    </section>
+  );
+};
+
+const PasswordUpdateForm = () => {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<PasswordFormValues>({
+    resolver: zodResolver(passwordUpdateSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
+
+  const onSubmit = async (values: PasswordFormValues) => {
+    try {
+      const response = await fetch("/api/auth/password", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+      });
+
+      const data = (await response.json().catch(() => null)) as
+        | { message?: string }
+        | null;
+
+      if (!response.ok) {
+        toast.error(
+          data?.message ?? "We couldn't update your password. Please try again."
+        );
+        return;
+      }
+
+      toast.success("Password updated successfully.");
+      reset();
+    } catch (error) {
+      console.error("Failed to update password", error);
+      toast.error("We couldn't update your password. Please try again.");
+    }
+  };
+
+  return (
+    <section className="space-y-6 rounded-[24px] border border-black/10 bg-white p-6 sm:p-8">
+      <div>
+        <h2 className="text-xl font-semibold text-black">
+          Change your password
+        </h2>
+        <p className="mt-1 text-sm text-black/60">
+          For your security, you will need your current password. Choose a new
+          password that you haven&apos;t used before.
+        </p>
+      </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <div>
+          <label className="mb-2 block text-sm font-medium text-black">
+            Current password
+          </label>
+          <InputGroup className="bg-[#F0F0F0]">
+            <InputGroup.Input
+              type="password"
+              placeholder="Enter current password"
+              className="bg-transparent"
+              autoComplete="current-password"
+              aria-invalid={errors.currentPassword ? "true" : "false"}
+              {...register("currentPassword")}
+            />
+          </InputGroup>
+          {errors.currentPassword && (
+            <p className="mt-2 text-sm text-red-500">
+              {errors.currentPassword.message}
+            </p>
+          )}
+        </div>
+        <div>
+          <label className="mb-2 block text-sm font-medium text-black">
+            New password
+          </label>
+          <InputGroup className="bg-[#F0F0F0]">
+            <InputGroup.Input
+              type="password"
+              placeholder="Create a new password"
+              className="bg-transparent"
+              autoComplete="new-password"
+              aria-invalid={errors.newPassword ? "true" : "false"}
+              {...register("newPassword")}
+            />
+          </InputGroup>
+          {errors.newPassword && (
+            <p className="mt-2 text-sm text-red-500">
+              {errors.newPassword.message}
+            </p>
+          )}
+        </div>
+        <div>
+          <label className="mb-2 block text-sm font-medium text-black">
+            Confirm new password
+          </label>
+          <InputGroup className="bg-[#F0F0F0]">
+            <InputGroup.Input
+              type="password"
+              placeholder="Re-enter new password"
+              className="bg-transparent"
+              autoComplete="new-password"
+              aria-invalid={errors.confirmPassword ? "true" : "false"}
+              {...register("confirmPassword")}
+            />
+          </InputGroup>
+          {errors.confirmPassword && (
+            <p className="mt-2 text-sm text-red-500">
+              {errors.confirmPassword.message}
+            </p>
+          )}
+        </div>
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="h-[50px] rounded-full bg-black px-6 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-black/50"
+        >
+          {isSubmitting ? "Updating password…" : "Update password"}
+        </Button>
+      </form>
     </section>
   );
 };
@@ -337,6 +647,31 @@ export default function ProfilePage() {
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [profile, setProfile] = useState<StoredProfile | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const persistSession = useCallback((sessionUser: CurrentUser) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem(
+      AUTH_SESSION_KEY,
+      JSON.stringify({
+        id: sessionUser.id,
+        email: sessionUser.email,
+        fullName: sessionUser.fullName,
+        phone: sessionUser.phone ?? "",
+      })
+    );
+  }, []);
+
+  const handleProfileUpdated = useCallback(
+    (nextUser: CurrentUser) => {
+      setUser(nextUser);
+      persistSession(nextUser);
+    },
+    [persistSession]
+  );
 
   useEffect(() => {
     setIsMounted(true);
@@ -366,18 +701,7 @@ export default function ProfilePage() {
         const data = (await response.json()) as { user: CurrentUser };
         setUser(data.user);
         setStatus("authenticated");
-
-        if (typeof window !== "undefined") {
-          window.localStorage.setItem(
-            AUTH_SESSION_KEY,
-            JSON.stringify({
-              id: data.user.id,
-              email: data.user.email,
-              fullName: data.user.fullName,
-              phone: data.user.phone ?? "",
-            })
-          );
-        }
+        persistSession(data.user);
 
         const stored = getStoredProfile(data.user.id);
         setProfile(stored);
@@ -396,13 +720,55 @@ export default function ProfilePage() {
     return () => {
       controller.abort();
     };
-  }, [isMounted]);
+  }, [isMounted, persistSession]);
 
   const handleLogin = (nextUser: CurrentUser) => {
     setUser(nextUser);
     setStatus("authenticated");
+    persistSession(nextUser);
     setProfile(getStoredProfile(nextUser.id));
   };
+
+  const handleLogout = useCallback(async () => {
+    if (isLoggingOut) {
+      return;
+    }
+
+    setIsLoggingOut(true);
+
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as
+          | { message?: string }
+          | null;
+        toast.error(
+          data?.message ?? "We couldn't log you out. Please try again."
+        );
+        setIsLoggingOut(false);
+        return;
+      }
+    } catch (error) {
+      console.error("Failed to log out", error);
+      toast.error("We couldn't log you out. Please try again.");
+      setIsLoggingOut(false);
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(AUTH_SESSION_KEY);
+    }
+
+    setUser(null);
+    setProfile(null);
+    setStatus("guest");
+    toast.success("You have been logged out.");
+    setIsLoggingOut(false);
+  }, [isLoggingOut]);
 
   if (!isMounted) {
     return null;
@@ -446,7 +812,33 @@ export default function ProfilePage() {
         </header>
 
         {status === "authenticated" && user ? (
-          <ProfileSummary user={user} profile={profile} />
+          <>
+            <ProfileSummary user={user} profile={profile} />
+            <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+              <AccountUpdateForm
+                user={user}
+                onUserUpdate={handleProfileUpdated}
+              />
+              <div className="space-y-6">
+                <PasswordUpdateForm />
+                <section className="rounded-[24px] border border-black/10 bg-white p-6 sm:p-8">
+                  <h2 className="text-xl font-semibold text-black">Sign out</h2>
+                  <p className="mt-1 text-sm text-black/60">
+                    Log out to end your session on this device. You&apos;ll need your
+                    password to sign back in.
+                  </p>
+                  <Button
+                    type="button"
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    className="mt-5 h-[50px] w-full rounded-full border border-black/15 bg-white text-sm font-semibold text-black transition hover:border-black disabled:cursor-not-allowed disabled:border-black/30 disabled:text-black/40"
+                  >
+                    {isLoggingOut ? "Signing out…" : "Log out"}
+                  </Button>
+                </section>
+              </div>
+            </div>
+          </>
         ) : null}
 
         {status === "guest" && !user ? (
