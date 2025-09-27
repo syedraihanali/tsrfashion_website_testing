@@ -12,8 +12,6 @@ import InputGroup from "@/components/ui/input-group";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
 
-const AUTH_STORAGE_KEY = "tsr-fashion-users";
-
 const signupSchema = z
   .object({
     fullName: z
@@ -40,24 +38,6 @@ const signupSchema = z
   });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
-
-const getStoredUsers = () => {
-  if (typeof window === "undefined") {
-    return [] as SignupFormValues[];
-  }
-
-  const raw = window.localStorage.getItem(AUTH_STORAGE_KEY);
-  if (!raw) {
-    return [] as SignupFormValues[];
-  }
-
-  try {
-    return JSON.parse(raw) as SignupFormValues[];
-  } catch (error) {
-    console.error("Failed to parse stored users", error);
-    return [] as SignupFormValues[];
-  }
-};
 
 export default function SignupPage() {
   const router = useRouter();
@@ -93,20 +73,28 @@ export default function SignupPage() {
     setIsMounted(true);
   }, []);
 
-  const onSubmit = (values: SignupFormValues) => {
+  const onSubmit = async (values: SignupFormValues) => {
     try {
-      const users = getStoredUsers();
-      const alreadyExists = users.some(
-        (user) => user.email.toLowerCase() === values.email.toLowerCase()
-      );
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fullName: values.fullName,
+          email: values.email,
+          phone: values.phone,
+          password: values.password,
+        }),
+      });
 
-      if (alreadyExists) {
-        toast.error("An account with this email already exists.");
+      const data = (await response.json().catch(() => null)) as { message?: string } | null;
+
+      if (!response.ok) {
+        toast.error(data?.message ?? "We couldn't complete your registration. Please try again.");
         return;
       }
 
-      const nextUsers = [...users, values];
-      window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(nextUsers));
       toast.success("Account created successfully! You can now log in.");
       reset();
       router.push("/login");
