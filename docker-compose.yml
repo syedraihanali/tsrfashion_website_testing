@@ -10,6 +10,7 @@ services:
     restart: always
     environment:
       - NODE_ENV=production
+      - DATABASE_URL=postgresql://tahir:Raihan12@128.199.31.100:5432/tsr_db
       # Add any other environment variables your app needs here
 
   # If you need a database or other services, add them here

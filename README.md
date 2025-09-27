@@ -73,7 +73,25 @@ To get started with Shopco locally, follow these steps:
    yarn install
    ```
 
-3. **Run the development server:**
+3. **Configure environment variables:**
+
+   Create a `.env` file in the project root with your database connection string:
+
+   ```env
+   DATABASE_URL="postgresql://tahir:Raihan12@128.199.31.100:5432/tsr_db"
+   ```
+
+   > Replace the credentials if you are using a different PostgreSQL instance.
+
+4. **Run database migrations:**
+
+   ```bash
+   npx prisma migrate deploy
+   ```
+
+   If you are working offline, you can generate the SQL script with `npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script` and apply it manually to your database.
+
+5. **Run the development server:**
 
    ```bash
    npm run dev
@@ -83,7 +101,7 @@ To get started with Shopco locally, follow these steps:
    yarn dev
    ```
 
-4. **Open in your browser:**
+6. **Open in your browser:**
    Navigate to [http://localhost:3000](http://localhost:3000) to view the app.
 
 ## Usage
@@ -92,6 +110,17 @@ To get started with Shopco locally, follow these steps:
 - The shopping cart logic is managed using **Redux**. You can find the store configuration and cart actions in the `src/lib/features` directory.
 - **ShadCN UI** components are used across the app. They can be customized in the `src/components/ui` directory.
 - You can easily modify and extend the project to suit your needs, whether for personal use or professional projects.
+
+### Available API Endpoints
+
+The project now exposes REST endpoints under `/api/auth` for authentication:
+
+- `POST /api/auth/signup` – create a new user with `fullName`, `email`, `phone`, and `password`.
+- `POST /api/auth/login` – authenticate with email and password, returning a session cookie.
+- `GET /api/auth/me` – fetch the authenticated user's profile using the session cookie.
+- `POST /api/auth/logout` – invalidate the current session.
+
+All endpoints share the same Next.js deployment as the front-end, enabling full-stack workflows.
 
 ## Project Structure
 

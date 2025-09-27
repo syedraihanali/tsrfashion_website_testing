@@ -12,7 +12,6 @@ import InputGroup from "@/components/ui/input-group";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
 
-const AUTH_STORAGE_KEY = "tsr-fashion-users";
 const AUTH_SESSION_KEY = "tsr-fashion-current-user";
 
 const loginSchema = z.object({
@@ -26,32 +25,6 @@ const loginSchema = z.object({
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
-
-type StoredUser = {
-  fullName: string;
-  email: string;
-  phone: string;
-  password: string;
-  confirmPassword: string;
-};
-
-const getStoredUsers = () => {
-  if (typeof window === "undefined") {
-    return [] as StoredUser[];
-  }
-
-  const raw = window.localStorage.getItem(AUTH_STORAGE_KEY);
-  if (!raw) {
-    return [] as StoredUser[];
-  }
-
-  try {
-    return JSON.parse(raw) as StoredUser[];
-  } catch (error) {
-    console.error("Failed to parse stored users", error);
-    return [] as StoredUser[];
-  }
-};
 
 export default function LoginPage() {
   const router = useRouter();
@@ -78,30 +51,79 @@ export default function LoginPage() {
 
   useEffect(() => {
     setIsMounted(true);
-  }, []);
 
-  const onSubmit = (values: LoginFormValues) => {
+    const controller = new AbortController();
+
+    const checkSession = async () => {
+      try {
+        const response = await fetch("/api/auth/me", {
+          method: "GET",
+          credentials: "include",
+          signal: controller.signal,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (typeof window !== "undefined") {
+            window.localStorage.setItem(
+              AUTH_SESSION_KEY,
+              JSON.stringify({
+                id: data.user.id,
+                email: data.user.email,
+                fullName: data.user.fullName,
+              })
+            );
+          }
+          router.replace("/profile");
+        }
+      } catch (error) {
+        if ((error as Error).name !== "AbortError") {
+          console.error("Failed to check session", error);
+        }
+      }
+    };
+
+    checkSession();
+
+    return () => {
+      controller.abort();
+    };
+  }, [router]);
+
+  const onSubmit = async (values: LoginFormValues) => {
     try {
-      const users = getStoredUsers();
-      const matchedUser = users.find(
-        (user) =>
-          user.email.toLowerCase() === values.email.toLowerCase() &&
-          user.password === values.password
-      );
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(values),
+      });
 
-      if (!matchedUser) {
-        toast.error("Incorrect email or password. Please try again.");
+      const data = (await response.json().catch(() => null)) as
+        | { message?: string; user?: { id: string; email: string; fullName: string } }
+        | null;
+
+      if (!response.ok) {
+        const message = data?.message ?? "Incorrect email or password. Please try again.";
+        toast.error(message);
         return;
       }
 
-      window.localStorage.setItem(
-        AUTH_SESSION_KEY,
-        JSON.stringify({
-          email: matchedUser.email,
-          fullName: matchedUser.fullName,
-        })
-      );
-      toast.success(`Welcome back, ${matchedUser.fullName.split(" ")[0]}!`);
+      if (data?.user && typeof window !== "undefined") {
+        window.localStorage.setItem(
+          AUTH_SESSION_KEY,
+          JSON.stringify({
+            id: data.user.id,
+            email: data.user.email,
+            fullName: data.user.fullName,
+          })
+        );
+      }
+
+      const firstName = data?.user?.fullName?.split(" ")[0] ?? "";
+      toast.success(firstName ? `Welcome back, ${firstName}!` : "Logged in successfully!");
       router.push("/profile");
     } catch (error) {
       console.error(error);
