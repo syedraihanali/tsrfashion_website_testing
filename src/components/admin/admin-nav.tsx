@@ -2,17 +2,40 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { type LucideIcon, Menu } from "lucide-react";
+import {
+  type LucideIcon,
+  ClipboardList,
+  LayoutDashboard,
+  Menu,
+  Package,
+  Settings2,
+  Users,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
+export type AdminNavIcon =
+  | "dashboard"
+  | "products"
+  | "orders"
+  | "users"
+  | "settings";
+
 export type AdminNavItem = {
   href: string;
   label: string;
   description: string;
-  icon: LucideIcon;
+  icon: AdminNavIcon;
+};
+
+const iconComponents: Record<AdminNavIcon, LucideIcon> = {
+  dashboard: LayoutDashboard,
+  products: Package,
+  orders: ClipboardList,
+  users: Users,
+  settings: Settings2,
 };
 
 const isActive = (pathname: string, href: string) => {
@@ -52,6 +75,8 @@ export function AdminMobileNav({
         <nav className="flex flex-col gap-1 px-2 py-4">
           {items.map((item) => {
             const active = isActive(pathname, item.href);
+            const Icon = iconComponents[item.icon];
+
             return (
               <Link
                 key={item.href}
@@ -63,7 +88,7 @@ export function AdminMobileNav({
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
-                <item.icon className="h-4 w-4" />
+                <Icon className="h-4 w-4" />
                 <span>{item.label}</span>
               </Link>
             );
@@ -96,6 +121,7 @@ export function AdminSidebar({
       <nav className="flex flex-1 flex-col gap-1 px-3 py-6">
         {items.map((item) => {
           const active = isActive(pathname, item.href);
+          const Icon = iconComponents[item.icon];
 
           return (
             <Link
@@ -108,7 +134,7 @@ export function AdminSidebar({
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
-              <item.icon className="h-4 w-4" />
+              <Icon className="h-4 w-4" />
               <div className="flex flex-col">
                 <span>{item.label}</span>
                 <span className="text-xs font-normal text-muted-foreground">

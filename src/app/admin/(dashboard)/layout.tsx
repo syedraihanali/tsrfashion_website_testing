@@ -1,13 +1,5 @@
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
-import {
-  ClipboardList,
-  LayoutDashboard,
-  Package,
-  Settings2,
-  Users,
-} from "lucide-react";
-
 import { AdminHeader, AdminSidebar, type AdminNavItem } from "@/components/admin/admin-nav";
 import { getCurrentAdmin } from "@/lib/admin-auth";
 
@@ -16,31 +8,31 @@ const navItems: AdminNavItem[] = [
     href: "/admin",
     label: "Dashboard",
     description: "Snapshot of store performance",
-    icon: LayoutDashboard,
+    icon: "dashboard",
   },
   {
     href: "/admin/products",
     label: "Products",
     description: "Manage catalog and availability",
-    icon: Package,
+    icon: "products",
   },
   {
     href: "/admin/orders",
     label: "Orders",
     description: "Track fulfilment progress",
-    icon: ClipboardList,
+    icon: "orders",
   },
   {
     href: "/admin/users",
     label: "Customers",
     description: "Review shopper accounts",
-    icon: Users,
+    icon: "users",
   },
   {
     href: "/admin/settings/admins",
     label: "Settings",
     description: "Administration preferences",
-    icon: Settings2,
+    icon: "settings",
   },
 ];
 
