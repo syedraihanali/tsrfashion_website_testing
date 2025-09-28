@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import ReviewCard from "@/components/common/ReviewCard";
-import { reviewsData } from "@/lib/data/products";
+import { reviewsData } from "@/lib/data/reviews";
 import Link from "next/link";
 
 const ReviewsContent = () => {

@@ -81,7 +81,7 @@ export const AdminLoginCard = () => {
             <Label htmlFor="email" error={!!errors.email}>
               Email
             </Label>
-            <Input id="email" type="email" placeholder="admin@tsrfashion.app" autoComplete="email" {...register("email")} />
+            <Input id="email" type="email" placeholder="admin@mail.com" autoComplete="email" {...register("email")} />
             {errors.email ? (
               <p className="text-sm text-destructive">{errors.email.message}</p>
             ) : (

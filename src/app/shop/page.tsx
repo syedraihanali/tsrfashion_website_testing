@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import BreadcrumbShop from "@/components/shop-page/BreadcrumbShop";
 
 import {
@@ -13,11 +13,6 @@ import {
 import MobileFilters from "@/components/shop-page/filters/MobileFilters";
 import Filters from "@/components/shop-page/filters";
 import { FiSliders } from "react-icons/fi";
-import {
-  newArrivalsData,
-  relatedProductData,
-  topSellingData,
-} from "@/lib/data/products";
 import ProductCard from "@/components/common/ProductCard";
 import {
   Pagination,
@@ -29,14 +24,19 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Product } from "@/types/product.types";
+import type { ShopFilterOptions, ShopFiltersState } from "@/types/filter.types";
 import {
-  ShopFiltersState,
+  defaultShopFilterOptions,
   defaultShopFiltersState,
 } from "@/types/filter.types";
 
 type SortOption = "most-popular" | "low-price" | "high-price";
 
 const getProductFinalPrice = (product: Product) => {
+  if (product.salePrice && product.salePrice < product.price) {
+    return product.salePrice;
+  }
+
   if (product.discount.percentage > 0) {
     return Math.round(
       product.price - (product.price * product.discount.percentage) / 100
@@ -55,15 +55,110 @@ export default function ShopPage() {
     defaultShopFiltersState
   );
   const [sort, setSort] = useState<SortOption>("most-popular");
-
-  const products = useMemo(
-    () => [
-      ...relatedProductData,
-      ...newArrivalsData,
-      ...topSellingData,
-    ],
-    []
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [filterOptions, setFilterOptions] = useState<ShopFilterOptions>(
+    defaultShopFilterOptions
   );
+
+  useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+
+    const loadProducts = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch("/api/products", {
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          const data = (await response.json().catch(() => null)) as
+            | { message?: string }
+            | null;
+          throw new Error(
+            data?.message ?? "We couldn't load the catalogue right now."
+          );
+        }
+
+        const data = (await response.json()) as { products: Product[] };
+
+        if (isMounted) {
+          setProducts(data.products);
+          setLoadError(null);
+        }
+
+        try {
+          const metaResponse = await fetch("/api/products/meta", {
+            signal: controller.signal,
+          });
+
+          if (!metaResponse.ok) {
+            throw new Error("Failed to load product filters");
+          }
+
+          const metaData = (await metaResponse.json()) as {
+            facets: ShopFilterOptions;
+          };
+
+          if (isMounted && metaData.facets) {
+            setFilterOptions((previous) => {
+              const next = metaData.facets;
+
+              return {
+                categories:
+                  next.categories?.length > 0
+                    ? Array.from(new Set(next.categories))
+                    : previous.categories,
+                styles:
+                  next.styles?.length > 0
+                    ? Array.from(new Set(next.styles))
+                    : previous.styles,
+                colors:
+                  next.colors?.length > 0
+                    ? Array.from(new Set(next.colors))
+                    : previous.colors,
+                sizes:
+                  next.sizes?.length > 0
+                    ? Array.from(new Set(next.sizes))
+                    : previous.sizes,
+              };
+            });
+          }
+        } catch (metaError) {
+          if ((metaError as { name?: string }).name !== "AbortError") {
+            console.error("Failed to load filter metadata", metaError);
+          }
+        }
+      } catch (error) {
+        if ((error as { name?: string }).name === "AbortError") {
+          return;
+        }
+
+        console.error("Failed to fetch products", error);
+        if (isMounted) {
+          setLoadError(
+            error instanceof Error
+              ? error.message
+              : "We couldn't load the catalogue right now."
+          );
+          setProducts([]);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadProducts();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, []);
 
   const filteredProducts = useMemo(() => {
     const filtered = products.filter((product) => {
@@ -75,7 +170,7 @@ export default function ShopPage() {
 
       if (
         filters.styles.length > 0 &&
-        !filters.styles.includes(product.style)
+        (!product.style || !filters.styles.includes(product.style))
       ) {
         return false;
       }
@@ -140,6 +235,7 @@ export default function ShopPage() {
             <Filters
               filters={filters}
               onFiltersChange={handleFiltersChange}
+              options={filterOptions}
             />
           </div>
           <div className="flex flex-col w-full space-y-5">
@@ -149,6 +245,7 @@ export default function ShopPage() {
                 <MobileFilters
                   filters={filters}
                   onFiltersChange={handleFiltersChange}
+                  options={filterOptions}
                 />
               </div>
               <div className="flex flex-col sm:items-center sm:flex-row">
@@ -174,7 +271,15 @@ export default function ShopPage() {
               </div>
             </div>
             <div className="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
-              {filteredProducts.length === 0 ? (
+              {isLoading ? (
+                <div className="col-span-full text-center py-10 text-black/60">
+                  Loading products…
+                </div>
+              ) : loadError ? (
+                <div className="col-span-full text-center py-10 text-black/60">
+                  {loadError}
+                </div>
+              ) : filteredProducts.length === 0 ? (
                 <div className="col-span-full text-center py-10 text-black/60">
                   No products match the selected filters.
                 </div>

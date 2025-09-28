@@ -7,55 +7,64 @@ import DressStyleSection from "@/components/shop-page/filters/DressStyleSection"
 import PriceSection from "@/components/shop-page/filters/PriceSection";
 import SizeSection from "@/components/shop-page/filters/SizeSection";
 import { Button } from "@/components/ui/button";
-import { ShopFiltersState } from "@/types/filter.types";
+import type { ShopFilterOptions, ShopFiltersState } from "@/types/filter.types";
+import { defaultShopFilterOptions } from "@/types/filter.types";
 
 type FiltersProps = {
   filters: ShopFiltersState;
   onFiltersChange: (filters: ShopFiltersState) => void;
   onApply?: () => void;
+  options?: ShopFilterOptions;
 };
 
-const categories = [
-  { label: "T-shirts", value: "t-shirts" },
-  { label: "Shorts", value: "shorts" },
-  { label: "Shirts", value: "shirts" },
-  { label: "Hoodie", value: "hoodie" },
-  { label: "Jeans", value: "jeans" },
-];
+const COLOR_CLASS_MAP: Record<string, string> = {
+  green: "bg-green-600",
+  red: "bg-red-600",
+  yellow: "bg-yellow-300",
+  orange: "bg-orange-600",
+  cyan: "bg-cyan-400",
+  blue: "bg-blue-600",
+  purple: "bg-purple-600",
+  pink: "bg-pink-600",
+  white: "bg-white",
+  black: "bg-black",
+};
 
-const dressStyles = [
-  { label: "Casual", value: "casual" },
-  { label: "Formal", value: "formal" },
-  { label: "Party", value: "party" },
-  { label: "Gym", value: "gym" },
-];
+const toLabel = (value: string) =>
+  value
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(" ");
 
-const colorOptions = [
-  { value: "green", className: "bg-green-600" },
-  { value: "red", className: "bg-red-600" },
-  { value: "yellow", className: "bg-yellow-300" },
-  { value: "orange", className: "bg-orange-600" },
-  { value: "cyan", className: "bg-cyan-400" },
-  { value: "blue", className: "bg-blue-600" },
-  { value: "purple", className: "bg-purple-600" },
-  { value: "pink", className: "bg-pink-600" },
-  { value: "white", className: "bg-white" },
-  { value: "black", className: "bg-black" },
-];
+const Filters = ({ filters, onFiltersChange, onApply, options }: FiltersProps) => {
+  const resolvedOptions = options ?? defaultShopFilterOptions;
+  const categories = (
+    resolvedOptions.categories.length > 0
+      ? resolvedOptions.categories
+      : defaultShopFilterOptions.categories
+  ).map((value) => ({
+    label: toLabel(value),
+    value,
+  }));
 
-const sizeOptions = [
-  "XX-Small",
-  "X-Small",
-  "Small",
-  "Medium",
-  "Large",
-  "X-Large",
-  "XX-Large",
-  "3X-Large",
-  "4X-Large",
-];
+  const dressStyles = (
+    resolvedOptions.styles.length > 0 ? resolvedOptions.styles : defaultShopFilterOptions.styles
+  ).map((value) => ({
+    label: toLabel(value),
+    value,
+  }));
 
-const Filters = ({ filters, onFiltersChange, onApply }: FiltersProps) => {
+  const colorOptions = (
+    resolvedOptions.colors.length > 0 ? resolvedOptions.colors : defaultShopFilterOptions.colors
+  ).map((value) => ({
+    value,
+    className: COLOR_CLASS_MAP[value.toLowerCase()],
+  }));
+
+  const sizeOptions =
+    resolvedOptions.sizes.length > 0 ? resolvedOptions.sizes : defaultShopFilterOptions.sizes;
+
   const handleCategoryChange = (value: string | null) => {
     onFiltersChange({
       ...filters,

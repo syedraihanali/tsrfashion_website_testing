@@ -64,6 +64,11 @@ model Product {
   stock       Int            @default(0)
   status      ProductStatus  @default(DRAFT)
   images      Json
+  category    String?
+  style       String?
+  colors      String[]       @default([])
+  sizes       String[]       @default([])
+  rating      Float          @default(0)
   tags        ProductTag[]
   variants    ProductVariant[]
   orderItems  OrderItem[]

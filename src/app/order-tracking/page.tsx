@@ -8,7 +8,6 @@ import {
   ORDER_STORAGE_KEY,
   OrderTracking,
   OrderTimelineStep,
-  sampleOrders,
 } from "@/lib/data/orders";
 import { cn } from "@/lib/utils";
 import { integralCF } from "@/styles/fonts";
@@ -108,7 +107,7 @@ export default function OrderTrackingPage() {
   const searchParams = useSearchParams();
   const initialOrderId = searchParams.get("orderId") ?? "";
   const [orderId, setOrderId] = useState(initialOrderId);
-  const [orders, setOrders] = useState<OrderTracking[]>(sampleOrders);
+  const [orders, setOrders] = useState<OrderTracking[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<OrderTracking | null>(
     null
   );
@@ -120,7 +119,7 @@ export default function OrderTrackingPage() {
     }
 
     const storedOrders = getStoredOrders();
-    setOrders(mergeOrders(sampleOrders, storedOrders));
+    setOrders(mergeOrders([], storedOrders));
   }, []);
 
   const handleLookup = useCallback(
@@ -355,31 +354,37 @@ export default function OrderTrackingPage() {
           <aside className="space-y-4 rounded-[24px] border border-black/10 bg-[#F7F7F7] p-6 sm:p-8">
             <h2 className="text-lg font-semibold text-black">Recent orders</h2>
             <ul className="space-y-3">
-              {recentOrders.map((orderItem) => (
-                <li
-                  key={orderItem.id}
-                  className="rounded-2xl border border-black/10 bg-white p-4"
-                >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOrderId(orderItem.id);
-                      handleLookup(orderItem.id);
-                    }}
-                    className="flex w-full flex-col items-start text-left"
-                  >
-                    <span className="text-sm font-semibold text-black">
-                      {orderItem.id}
-                    </span>
-                    <span className="text-xs text-black/50">
-                      {formatDate(orderItem.placedOn)} · {formatStatus(orderItem.status)}
-                    </span>
-                    <span className="mt-1 text-sm font-medium text-black">
-                      {formatCurrency(orderItem.totalAmount)}
-                    </span>
-                  </button>
+              {recentOrders.length === 0 ? (
+                <li className="text-sm text-black/60">
+                  Orders you track will appear here for quick access.
                 </li>
-              ))}
+              ) : (
+                recentOrders.map((orderItem) => (
+                  <li
+                    key={orderItem.id}
+                    className="rounded-2xl border border-black/10 bg-white p-4"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOrderId(orderItem.id);
+                        handleLookup(orderItem.id);
+                      }}
+                      className="flex w-full flex-col items-start text-left"
+                    >
+                      <span className="text-sm font-semibold text-black">
+                        {orderItem.id}
+                      </span>
+                      <span className="text-xs text-black/50">
+                        {formatDate(orderItem.placedOn)} · {formatStatus(orderItem.status)}
+                      </span>
+                      <span className="mt-1 text-sm font-medium text-black">
+                        {formatCurrency(orderItem.totalAmount)}
+                      </span>
+                    </button>
+                  </li>
+                ))
+              )}
             </ul>
             <p className="text-xs text-black/50">
               Only orders placed on this device appear here. For help locating a

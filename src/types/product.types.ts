@@ -4,15 +4,22 @@ export type Discount = {
 };
 
 export type Product = {
-  id: number;
+  id: string;
   title: string;
+  slug: string;
+  description: string;
   srcUrl: string;
-  gallery?: string[];
+  gallery: string[];
   price: number;
+  salePrice: number | null;
+  currency: string;
   discount: Discount;
   rating: number;
-  category: string;
-  style: string;
+  category: string | null;
+  style: string | null;
   colors: string[];
   sizes: string[];
+  tags: string[];
+  tagSlugs: string[];
+  stock: number;
 };

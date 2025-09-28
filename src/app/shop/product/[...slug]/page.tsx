@@ -1,46 +1,41 @@
-import {
-  newArrivalsData,
-  relatedProductData,
-  topSellingData,
-} from "@/lib/data/products";
 import ProductListSec from "@/components/common/ProductListSec";
 import BreadcrumbProduct from "@/components/product-page/BreadcrumbProduct";
 import Header from "@/components/product-page/Header";
 import Tabs from "@/components/product-page/Tabs";
-import { Product } from "@/types/product.types";
+import { getProductById, getRelatedProducts } from "@/lib/products";
 import { notFound } from "next/navigation";
 
-const data: Product[] = [
-  ...newArrivalsData,
-  ...topSellingData,
-  ...relatedProductData,
-];
-
-export default function ProductPage({
+export default async function ProductPage({
   params,
 }: {
   params: { slug: string[] };
 }) {
-  const productData = data.find(
-    (product) => product.id === Number(params.slug[0])
-  );
+  const productId = params.slug?.[0];
 
-  if (!productData?.title) {
+  if (!productId) {
     notFound();
   }
+
+  const product = await getProductById(productId);
+
+  if (!product) {
+    notFound();
+  }
+
+  const related = await getRelatedProducts(product, { take: 8 });
 
   return (
     <main>
       <div className="max-w-frame mx-auto px-4 xl:px-0">
         <hr className="h-[1px] border-t-black/10 mb-5 sm:mb-6" />
-        <BreadcrumbProduct title={productData?.title ?? "product"} />
+        <BreadcrumbProduct title={product.title} />
         <section className="mb-11">
-          <Header data={productData} />
+          <Header data={product} />
         </section>
         <Tabs />
       </div>
       <div className="mb-[50px] sm:mb-20">
-        <ProductListSec title="You might also like" data={relatedProductData} />
+        <ProductListSec title="You might also like" data={related} />
       </div>
     </main>
   );
