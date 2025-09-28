@@ -9,6 +9,9 @@
     "lint": "next lint",
     "postinstall": "node scripts/prisma-postinstall.mjs"
   },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
     "@prisma/client": "^6.16.2",
