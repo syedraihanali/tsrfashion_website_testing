@@ -1,5 +1,5 @@
-import { Product } from "@/types/product.types";
-import { Review } from "@/types/review.types";
+import type { Product } from "../../types/product.types";
+import type { Review } from "../../types/review.types";
 
 export const newArrivalsData: Product[] = [
   {
@@ -184,8 +184,8 @@ export const topSellingData: Product[] = [
   {
     id: 16,
     title: "Relaxed Fit Joggers",
-    srcUrl: "/images/pic16.png",
-    gallery: ["/images/pic16.png"],
+    srcUrl: "/images/pic7.png",
+    gallery: ["/images/pic7.png"],
     price: 110,
     discount: {
       amount: 10,

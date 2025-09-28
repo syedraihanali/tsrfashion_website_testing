@@ -93,6 +93,8 @@ To get started with Shopco locally, follow these steps:
 
    > **Tip:** The project automatically runs `prisma generate` and, when `DATABASE_URL` is configured, `prisma migrate deploy` after `npm install`. Set `SKIP_PRISMA_MIGRATE=true` if you need to skip migrations during installation.
 
+   When you execute `npm run build`, the build script now runs `prisma migrate deploy` and `prisma db seed` (with automatic retries) before invoking `next build`, ensuring the database schema and seed data stay in sync with the application bundle.
+
 5. **Run the development server:**
 
    ```bash
