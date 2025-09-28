@@ -1,5 +1,5 @@
-import { Product } from "@/types/product.types";
-import { Review } from "@/types/review.types";
+import type { Product } from "../../types/product.types";
+import type { Review } from "../../types/review.types";
 
 export const newArrivalsData: Product[] = [
   {

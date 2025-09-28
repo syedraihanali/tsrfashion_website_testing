@@ -11,15 +11,15 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  fullName     String
-  phone        String?
-  passwordHash String
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  sessions     Session[]
-  orders       Order[]
+  id              String           @id @default(cuid())
+  email           String           @unique
+  fullName        String
+  phone           String?
+  passwordHash    String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  sessions        Session[]
+  orders          Order[]
   supportMessages SupportMessage[]
 }
 
@@ -32,12 +32,81 @@ model Session {
   expiresAt DateTime
 }
 
+model Admin {
+  id           String         @id @default(cuid())
+  email        String         @unique
+  passwordHash String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  sessions     AdminSession[]
+}
+
+model AdminSession {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  adminId   String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String
+  slug        String    @unique
+  description String?
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id                 Int            @id @default(autoincrement())
+  title              String
+  slug               String         @unique
+  description        String?
+  price              Decimal        @db.Decimal(10, 2)
+  rating             Float?
+  discountAmount     Int?
+  discountPercentage Int?
+  colors             String[]
+  sizes              String[]
+  style              String?
+  category           Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId         Int
+  images             ProductImage[]
+  reviews            Review[]
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+}
+
+model ProductImage {
+  id        Int      @id @default(autoincrement())
+  url       String
+  isPrimary Boolean  @default(false)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int
+  createdAt DateTime @default(now())
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  user       String
+  content    String
+  rating     Int
+  reviewedAt DateTime @default(now())
+  product    Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId  Int?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
 model Order {
-  id                String   @id @default(cuid())
-  orderNumber       String   @unique
-  user              User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  id                String    @id @default(cuid())
+  orderNumber       String    @unique
+  user              User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId            String?
-  placedOn          DateTime @default(now())
+  placedOn          DateTime  @default(now())
   totalAmount       Int
   itemsCount        Int
   status            String
@@ -51,19 +120,19 @@ model Order {
   shippingCity      String
   shippingPostal    String
   statusHistory     Json
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 }
 
 model SupportMessage {
-  id        String   @id @default(cuid())
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  userId    String?
-  fullName  String
-  email     String
-  subject   String
-  message   String
+  id          String   @id @default(cuid())
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId      String?
+  fullName    String
+  email       String
+  subject     String
+  message     String
   orderNumber String?
-  createdAt DateTime @default(now())
-  resolved  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  resolved    Boolean  @default(false)
 }
