@@ -25,22 +25,51 @@ const slugify = (value: string) =>
 
 type ImageUploadResult = Map<string, string>;
 
+const parseEndpointConfig = (rawEndpoint: string) => {
+  const trimmed = rawEndpoint.trim();
+  const hasScheme = /^https?:\/\//i.test(trimmed);
+  const candidate = hasScheme ? trimmed : `http://${trimmed}`;
+
+  try {
+    const url = new URL(candidate);
+
+    if (url.pathname !== "/" || url.search || url.hash) {
+      throw new Error("MinIO endpoint must not contain path, search, or hash components.");
+    }
+
+    return {
+      host: url.hostname,
+      port: url.port ? Number.parseInt(url.port, 10) : undefined,
+      useSSL: hasScheme ? url.protocol === "https:" : undefined,
+    };
+  } catch (error) {
+    throw new Error(`Invalid MinIO endpoint URL: ${rawEndpoint}`);
+  }
+};
+
 const createMinioClient = () => {
-  const endPoint = process.env.MINIO_ENDPOINT;
+  const endpointRaw = process.env.MINIO_ENDPOINT;
   const accessKey = process.env.MINIO_ACCESS_KEY;
   const secretKey = process.env.MINIO_SECRET_KEY;
 
-  if (!endPoint || !accessKey || !secretKey) {
+  if (!endpointRaw || !accessKey || !secretKey) {
     throw new Error(
       "Missing MinIO configuration. Please set MINIO_ENDPOINT, MINIO_ACCESS_KEY and MINIO_SECRET_KEY."
     );
   }
 
-  const port = Number.parseInt(process.env.MINIO_PORT ?? "9000", 10);
-  const useSSL = (process.env.MINIO_USE_SSL ?? "false").toLowerCase() === "true";
+  const endpointConfig = parseEndpointConfig(endpointRaw);
+  const port =
+    Number.parseInt(process.env.MINIO_PORT ?? "", 10) ||
+    endpointConfig.port ||
+    9000;
+  const useSSL =
+    (process.env.MINIO_USE_SSL ?? "") !== ""
+      ? (process.env.MINIO_USE_SSL ?? "false").toLowerCase() === "true"
+      : endpointConfig.useSSL ?? false;
 
   return new MinioClient({
-    endPoint,
+    endPoint: endpointConfig.host,
     port,
     useSSL,
     accessKey,
@@ -77,13 +106,31 @@ const ensureBucket = async (client: MinioClient, bucket: string) => {
 
 const uploadProductImages = async (): Promise<ImageUploadResult> => {
   const bucket = process.env.MINIO_BUCKET ?? "tsrfashion-products";
+  const endpointRaw = process.env.MINIO_ENDPOINT;
+
+  if (!endpointRaw) {
+    throw new Error("MINIO_ENDPOINT must be set to upload product images.");
+  }
+
+  const endpointConfig = parseEndpointConfig(endpointRaw);
+  const port =
+    Number.parseInt(process.env.MINIO_PORT ?? "", 10) ||
+    endpointConfig.port ||
+    9000;
   const client = createMinioClient();
   await ensureBucket(client, bucket);
 
-  const scheme = (process.env.MINIO_USE_SSL ?? "false").toLowerCase() === "true" ? "https" : "http";
+  const scheme =
+    (process.env.MINIO_USE_SSL ?? "") !== ""
+      ? (process.env.MINIO_USE_SSL ?? "false").toLowerCase() === "true"
+        ? "https"
+        : "http"
+      : endpointConfig.useSSL
+      ? "https"
+      : "http";
   const publicBase =
     process.env.MINIO_PUBLIC_URL ??
-    `${scheme}://${process.env.MINIO_ENDPOINT}:${process.env.MINIO_PORT ?? "9000"}`;
+    `${scheme}://${endpointConfig.host}:${port}`;
 
   const imagePaths = new Set<string>();
   allProducts.forEach((product) => {
