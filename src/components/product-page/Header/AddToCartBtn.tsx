@@ -24,6 +24,7 @@ const AddToCartBtn = ({ data }: { data: Product & { quantity: number } }) => {
             name: data.title,
             srcUrl: data.srcUrl,
             price: data.price,
+            currency: data.currency,
             attributes: [sizeSelection, colorSelection.name],
             discount: data.discount,
             quantity: data.quantity,

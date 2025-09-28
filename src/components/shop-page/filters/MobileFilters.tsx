@@ -11,14 +11,15 @@ import {
 } from "@/components/ui/drawer";
 import { FiSliders } from "react-icons/fi";
 import Filters from ".";
-import { ShopFiltersState } from "@/types/filter.types";
+import type { ShopFilterOptions, ShopFiltersState } from "@/types/filter.types";
 
 type MobileFiltersProps = {
   filters: ShopFiltersState;
   onFiltersChange: (filters: ShopFiltersState) => void;
+  options?: ShopFilterOptions;
 };
 
-const MobileFilters = ({ filters, onFiltersChange }: MobileFiltersProps) => {
+const MobileFilters = ({ filters, onFiltersChange, options }: MobileFiltersProps) => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -44,6 +45,7 @@ const MobileFilters = ({ filters, onFiltersChange }: MobileFiltersProps) => {
           <Filters
             filters={filters}
             onFiltersChange={onFiltersChange}
+            options={options}
             onApply={() => setOpen(false)}
           />
         </div>

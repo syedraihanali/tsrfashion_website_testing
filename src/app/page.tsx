@@ -1,9 +1,14 @@
 import ProductListSec from "@/components/common/ProductListSec";
 import Brands from "@/components/homepage/Brands";
 import Header from "@/components/homepage/Header";
-import { newArrivalsData, topSellingData } from "@/lib/data/products";
+import { getActiveProducts } from "@/lib/products";
 
-export default function Home() {
+export default async function Home() {
+  const [newArrivals, topSelling] = await Promise.all([
+    getActiveProducts({ tagSlugs: ["new-arrival"], take: 8 }),
+    getActiveProducts({ tagSlugs: ["best-seller"], take: 8 }),
+  ]);
+
   return (
     <>
       <Header />
@@ -11,7 +16,7 @@ export default function Home() {
       <main className="my-[50px] sm:my-[72px]">
         <ProductListSec
           title="NEW ARRIVALS"
-          data={newArrivalsData}
+          data={newArrivals}
           viewAllLink="/shop#new-arrivals"
         />
         <div className="max-w-frame mx-auto px-4 xl:px-0">
@@ -20,7 +25,7 @@ export default function Home() {
         <div className="mb-[50px] sm:mb-20">
           <ProductListSec
             title="top selling"
-            data={topSellingData}
+            data={topSelling}
             viewAllLink="/shop#top-selling"
           />
         </div>

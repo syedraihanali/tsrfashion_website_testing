@@ -1,22 +1,30 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { serializeOrder } from "@/lib/serializers/order";
 
 export async function GET(
-  request: Request,
+  _request: NextRequest,
   { params }: { params: { orderNumber: string } }
 ) {
-  const order = await prisma.order.findUnique({
-    where: { orderNumber: params.orderNumber },
-  });
+  try {
+    const order = await prisma.order.findUnique({
+      where: { orderNumber: params.orderNumber },
+    });
 
-  if (!order) {
+    if (!order) {
+      return NextResponse.json(
+        { message: "Order not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ order: serializeOrder(order) });
+  } catch (error) {
+    console.error("Failed to lookup order", error);
     return NextResponse.json(
-      { message: "Order not found" },
-      { status: 404 }
+      { message: "We couldn't check our records right now. Please try again." },
+      { status: 500 }
     );
   }
-
-  return NextResponse.json({ order: serializeOrder(order) });
 }

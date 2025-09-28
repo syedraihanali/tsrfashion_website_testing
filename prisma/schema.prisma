@@ -11,16 +11,17 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  fullName     String
-  phone        String?
-  passwordHash String
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  sessions     Session[]
-  orders       Order[]
-  supportMessages SupportMessage[]
+  id               String           @id @default(cuid())
+  email            String           @unique
+  fullName         String
+  phone            String?
+  passwordHash     String
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  sessions         Session[]
+  orders           Order[]
+  supportMessages  SupportMessage[]
+  searchActivities SearchLog[]
 }
 
 model Session {
@@ -32,12 +33,97 @@ model Session {
   expiresAt DateTime
 }
 
+model Admin {
+  id           String         @id @default(cuid())
+  email        String         @unique
+  name         String?
+  passwordHash String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  sessions     AdminSession[]
+}
+
+model AdminSession {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  adminId   String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
+
+model Product {
+  id          String         @id @default(cuid())
+  slug        String         @unique
+  name        String
+  description String
+  sku         String         @unique
+  price       Int
+  salePrice   Int?
+  currency    String         @default("USD")
+  stock       Int            @default(0)
+  status      ProductStatus  @default(DRAFT)
+  images      Json
+  category    String?
+  style       String?
+  colors      String[]       @default([])
+  sizes       String[]       @default([])
+  rating      Float          @default(0)
+  tags        ProductTag[]
+  variants    ProductVariant[]
+  orderItems  OrderItem[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model ProductVariant {
+  id        String   @id @default(cuid())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+  name      String
+  sku       String   @unique
+  priceDelta Int     @default(0)
+  stock     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orderItems OrderItem[]
+}
+
+model Tag {
+  id        String        @id @default(cuid())
+  label     String        @unique
+  slug      String        @unique
+  products  ProductTag[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model ProductTag {
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId     String
+  assignedAt DateTime @default(now())
+
+  @@id([productId, tagId])
+}
+
+model SearchLog {
+  id           String   @id @default(cuid())
+  query        String
+  filters      Json?
+  resultsCount Int
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId       String?
+  searchedAt   DateTime @default(now())
+}
+
 model Order {
-  id                String   @id @default(cuid())
-  orderNumber       String   @unique
-  user              User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  id                String      @id @default(cuid())
+  orderNumber       String      @unique
+  user              User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId            String?
-  placedOn          DateTime @default(now())
+  placedOn          DateTime    @default(now())
   totalAmount       Int
   itemsCount        Int
   status            String
@@ -51,19 +137,42 @@ model Order {
   shippingCity      String
   shippingPostal    String
   statusHistory     Json
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  items             OrderItem[]
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+}
+
+model OrderItem {
+  id         String          @id @default(cuid())
+  order      Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId    String
+  product    Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId  String?
+  variant    ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  variantId  String?
+  quantity   Int
+  unitPrice  Int
+  totalPrice Int
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
 }
 
 model SupportMessage {
-  id        String   @id @default(cuid())
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  userId    String?
-  fullName  String
-  email     String
-  subject   String
-  message   String
+  id          String   @id @default(cuid())
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId      String?
+  fullName    String
+  email       String
+  subject     String
+  message     String
   orderNumber String?
-  createdAt DateTime @default(now())
-  resolved  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  resolved    Boolean  @default(false)
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  OUT_OF_STOCK
+  ARCHIVED
 }
