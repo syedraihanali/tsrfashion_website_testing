@@ -70,6 +70,7 @@ export default function LoginPage() {
                 id: data.user.id,
                 email: data.user.email,
                 fullName: data.user.fullName,
+                role: data.user.role,
               })
             );
           }
@@ -101,7 +102,10 @@ export default function LoginPage() {
       });
 
       const data = (await response.json().catch(() => null)) as
-        | { message?: string; user?: { id: string; email: string; fullName: string } }
+        | {
+            message?: string;
+            user?: { id: string; email: string; fullName: string; role: "USER" | "ADMIN" };
+          }
         | null;
 
       if (!response.ok) {
@@ -117,6 +121,7 @@ export default function LoginPage() {
             id: data.user.id,
             email: data.user.email,
             fullName: data.user.fullName,
+            role: data.user.role,
           })
         );
       }

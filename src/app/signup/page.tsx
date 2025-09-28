@@ -92,7 +92,16 @@ export default function SignupPage() {
       const data = (await response
         .json()
         .catch(() => null)) as
-        | { message?: string; user?: { id: string; email: string; fullName: string; phone?: string | null } }
+        | {
+            message?: string;
+            user?: {
+              id: string;
+              email: string;
+              fullName: string;
+              phone?: string | null;
+              role: "USER" | "ADMIN";
+            };
+          }
         | null;
 
       if (!response.ok) {
@@ -108,6 +117,7 @@ export default function SignupPage() {
             email: data.user.email,
             fullName: data.user.fullName,
             phone: data.user.phone ?? "",
+            role: data.user.role,
           })
         );
       }

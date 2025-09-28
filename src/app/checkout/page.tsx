@@ -114,6 +114,7 @@ type CurrentUser = {
   email: string;
   fullName: string;
   phone?: string | null;
+  role: "USER" | "ADMIN";
 };
 
 const getCartItemFinalPrice = (item: CartItem) => {
@@ -244,6 +245,7 @@ export default function CheckoutPage() {
               email: data.user.email,
               fullName: data.user.fullName,
               phone: data.user.phone ?? "",
+              role: data.user.role,
             })
           );
         }
@@ -374,6 +376,7 @@ export default function CheckoutPage() {
                 email: data.user.email,
                 fullName: data.user.fullName,
                 phone: data.user.phone ?? "",
+                role: data.user.role,
               })
             );
           }

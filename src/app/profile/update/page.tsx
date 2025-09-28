@@ -60,6 +60,7 @@ type CurrentUser = {
   email: string;
   fullName: string;
   phone?: string | null;
+  role: "USER" | "ADMIN";
 };
 
 type AuthStatus = "loading" | "guest" | "authenticated";
@@ -133,6 +134,7 @@ export default function ProfileUpdatePage() {
               email: data.user.email,
               fullName: data.user.fullName,
               phone: data.user.phone ?? "",
+              role: data.user.role,
             })
           );
         }

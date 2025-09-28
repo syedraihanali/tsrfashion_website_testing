@@ -89,3 +89,17 @@ export const requireCurrentUser = async () => {
 
   return user;
 };
+
+export const requireAdminUser = async () => {
+  const maybeUser = await requireCurrentUser();
+
+  if (maybeUser instanceof NextResponse) {
+    return maybeUser;
+  }
+
+  if (maybeUser.role !== "ADMIN") {
+    return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+  }
+
+  return maybeUser;
+};

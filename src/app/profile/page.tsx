@@ -71,6 +71,7 @@ type CurrentUser = {
   email: string;
   fullName: string;
   phone?: string | null;
+  role: "USER" | "ADMIN";
   createdAt: string;
   updatedAt?: string;
 };
@@ -133,6 +134,7 @@ const ProfileLoginForm = ({
             email: data.user.email,
             fullName: data.user.fullName,
             phone: data.user.phone ?? "",
+            role: data.user.role,
           })
         );
         onLogin(data.user);
@@ -273,6 +275,14 @@ const ProfileSummary = ({
             </p>
             <p className="mt-1 text-base font-medium text-black">
               {user.phone?.trim() ?? "Add a phone number"}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-wide text-black/50">
+              Account role
+            </p>
+            <p className="mt-1 text-base font-medium text-black">
+              {user.role === "ADMIN" ? "Administrator" : "Customer"}
             </p>
           </div>
         </div>
@@ -422,6 +432,7 @@ const AccountUpdateForm = ({
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
@@ -661,6 +672,7 @@ export default function ProfilePage() {
         email: sessionUser.email,
         fullName: sessionUser.fullName,
         phone: sessionUser.phone ?? "",
+        role: sessionUser.role,
       })
     );
   }, []);
@@ -791,6 +803,14 @@ export default function ProfilePage() {
             this information current helps us speed up future checkouts.
           </p>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+            {user?.role === "ADMIN" ? (
+              <Link
+                href="/admin"
+                className="inline-flex h-[48px] items-center justify-center rounded-full border border-black/15 px-6 text-sm font-medium text-black transition hover:border-black"
+              >
+                Open admin dashboard
+              </Link>
+            ) : null}
             <Link
               href="/order-tracking"
               className="inline-flex h-[48px] items-center justify-center rounded-full border border-black/15 px-6 text-sm font-medium text-black transition hover:border-black"
