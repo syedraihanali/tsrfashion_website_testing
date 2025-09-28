@@ -74,6 +74,7 @@ export async function PATCH(request: Request) {
       email: true,
       fullName: true,
       phone: true,
+      role: true,
       createdAt: true,
       updatedAt: true,
     },

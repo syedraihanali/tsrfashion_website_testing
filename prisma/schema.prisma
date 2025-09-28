@@ -11,16 +11,22 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  fullName     String
-  phone        String?
-  passwordHash String
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  sessions     Session[]
-  orders       Order[]
+  id              String           @id @default(cuid())
+  email           String           @unique
+  fullName        String
+  phone           String?
+  passwordHash    String
+  role            Role             @default(USER)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  sessions        Session[]
+  orders          Order[]
   supportMessages SupportMessage[]
+}
+
+enum Role {
+  USER
+  ADMIN
 }
 
 model Session {

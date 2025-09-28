@@ -49,6 +49,7 @@ export async function POST(request: Request) {
         email: true,
         fullName: true,
         phone: true,
+        role: true,
         createdAt: true,
       },
     });
